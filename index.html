@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Check-in Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .event-title {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .checkin-list {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .list-header {
+            font-size: 1.5em;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .checkin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.5s ease;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .checkin-item.newest {
+            background: rgba(76, 175, 80, 0.3);
+            border-left: 4px solid #81C784;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+            transform: scale(1.02);
+        }
+
+        .checkin-item.slide-up {
+            transform: translateY(-60px);
+            opacity: 0.7;
+        }
+
+        .person-info {
+            flex: 1;
+        }
+
+        .person-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .person-details {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .ticket-info {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .ticket-number {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 3px;
+        }
+
+        .checkin-time {
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        .new-badge {
+            background: #FF5722;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.7em;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .no-checkins {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.7;
+            font-size: 1.2em;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .connected {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .disconnected {
+            background: #F44336;
+            color: white;
+        }
+
+        .age-indicator {
+            opacity: 1;
+        }
+
+        .checkin-item:nth-child(1) .age-indicator { opacity: 0.6; }
+        .checkin-item:nth-child(2) .age-indicator { opacity: 0.7; }
+        .checkin-item:nth-child(3) .age-indicator { opacity: 0.8; }
+        .checkin-item:nth-child(4) .age-indicator { opacity: 0.85; }
+        .checkin-item:nth-child(5) .age-indicator { opacity: 0.9; }
+        .checkin-item:nth-child(6) .age-indicator { opacity: 0.95; }
+        .checkin-item:nth-child(7) .age-indicator { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1 class="event-title">🎫 Lead The Future Conference 2025</h1>
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-number" id="checkedInCount">0</div>
+                    <div class="stat-label">Checked In</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">300</div>
+                    <div class="stat-label">Total Expected</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="percentageCount">0%</div>
+                    <div class="stat-label">Progress</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="checkin-list">
+            <h2 class="list-header">📋 Recent Check-ins (Last 5)</h2>
+            <div id="checkinItems">
+                <div class="no-checkins">
+                    Waiting for first check-in... 🔄
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="connection-status connected" id="connectionStatus">
+        🟢 Connected
+    </div>
+
+    <script>
+        // ⚠️ IMPORTANT: Replace this with your actual Google Sheets CSV URL
+        // Go to your Google Sheet → File → Share → Publish to web → CSV format
+        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
+        
+        let previousData = [];
+        let isFirstLoad = true;
+
+        // Sample data matching your Google Sheet structure
+        let sampleData = [
+            { nricFullName: "Ahmad Bin Abdullah", emailAddress: "ahmad@email.com", mobileNumber: "012-345-6789", ticketNumber: "T001", ticketID: "L001", timestamp: new Date(Date.now() - 300000) },
+            { nricFullName: "Siti Nurhaliza", emailAddress: "siti@email.com", mobileNumber: "012-345-6790", ticketNumber: "T002", ticketID: "L002", timestamp: new Date(Date.now() - 240000) },
+            { nricFullName: "Raj Kumar", emailAddress: "raj@email.com", mobileNumber: "012-345-6791", ticketNumber: "T003", ticketID: "L003", timestamp: new Date(Date.now() - 180000) },
+            { nricFullName: "Lim Wei Ming", emailAddress: "lim@email.com", mobileNumber: "012-345-6792", ticketNumber: "T004", ticketID: "L004", timestamp: new Date(Date.now() - 120000) },
+            { nricFullName: "Fatimah Zahra", emailAddress: "fatimah@email.com", mobileNumber: "012-345-6793", ticketNumber: "T005", ticketID: "L005", timestamp: new Date(Date.now() - 60000) }
+        ];
+        let sampleIndex = 0;
+
+        function formatTimeAgo(timestamp) {
+            const now = new Date();
+            const diff = now - timestamp;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+
+            if (seconds < 60) return seconds <= 5 ? 'just now' : `${seconds} sec ago`;
+            if (minutes < 60) return `${minutes} min ago`;
+            return `${hours}h ${minutes % 60}m ago`;
+        }
+
+        function updateStats(checkedInCount) {
+            document.getElementById('checkedInCount').textContent = checkedInCount;
+            const percentage = Math.round((checkedInCount / 300) * 100);
+            document.getElementById('percentageCount').textContent = `${percentage}%`;
+        }
+
+        function createCheckinItem(person, isNewest = false) {
+            const item = document.createElement('div');
+            item.className = `checkin-item age-indicator ${isNewest ? 'newest' : ''}`;
+            
+            item.innerHTML = `
+                <div class="person-info">
+                    <div class="person-name">${person.nricFullName}</div>
+                    <div class="person-details">Mobile: ${person.mobileNumber}</div>
+                </div>
+                <div class="ticket-info">
+                    <div class="ticket-number">ID: ${person.ticketID}</div>
+                    <div class="checkin-time">${formatTimeAgo(person.timestamp)}</div>
+                </div>
+                ${isNewest ? '<span class="new-badge">NEW!</span>' : ''}
+            `;
+            
+            return item;
+        }
+
+        function updateCheckinDisplay(data) {
+            const container = document.getElementById('checkinItems');
+            
+            if (data.length === 0) {
+                container.innerHTML = '<div class="no-checkins">Waiting for first check-in... 🔄</div>';
+                return;
+            }
+
+            // Get last 5 entries, oldest first
+            const recentCheckins = data.slice(-5);
+            
+            // Check if there's a new entry
+            const hasNewEntry = !isFirstLoad && data.length > previousData.length;
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Add items (oldest to newest)
+            recentCheckins.forEach((person, index) => {
+                const isNewest = hasNewEntry && index === recentCheckins.length - 1;
+                const item = createCheckinItem(person, isNewest);
+                container.appendChild(item);
+                
+                // Add slide-up animation for new entries
+                if (hasNewEntry && index < recentCheckins.length - 1) {
+                    setTimeout(() => {
+                        item.classList.add('slide-up');
+                        setTimeout(() => item.classList.remove('slide-up'), 500);
+                    }, 100);
+                }
+            });
+            
+            // Remove NEW badge after 5 seconds
+            if (hasNewEntry) {
+                setTimeout(() => {
+                    const newestItem = container.querySelector('.checkin-item.newest');
+                    if (newestItem) {
+                        newestItem.classList.remove('newest');
+                        const badge = newestItem.querySelector('.new-badge');
+                        if (badge) badge.remove();
+                    }
+                }, 5000);
+            }
+            
+            updateStats(data.length);
+            previousData = [...data];
+            isFirstLoad = false;
+        }
+
+        async function fetchGoogleSheetData() {
+            // For demonstration, we'll use sample data
+            // Replace this section with actual Google Sheets API call
+            
+                if (sampleIndex < sampleData.length) {
+                // Simulate new check-ins every 10 seconds
+                const currentData = sampleData.slice(0, sampleIndex + 1);
+                updateCheckinDisplay(currentData);
+                sampleIndex++;
+            } else {
+                // Add random new entries occasionally
+                if (Math.random() < 0.3) { // 30% chance
+                    const newPerson = {
+                        nricFullName: `Test Person ${sampleData.length + 1}`,
+                        emailAddress: "test@email.com",
+                        mobileNumber: "012-345-6700",
+                        ticketNumber: `T${String(sampleData.length + 1).padStart(3, '0')}`,
+                        ticketID: `L${String(sampleData.length + 1).padStart(3, '0')}`,
+                        timestamp: new Date()
+                    };
+                    sampleData.push(newPerson);
+                    updateCheckinDisplay(sampleData);
+                }
+            }
+            
+            /* 
+            // Uncomment and modify this section when connecting to real Google Sheets:
+            
+            try {
+                const response = await fetch(GOOGLE_SHEET_URL);
+                const csvText = await response.text();
+                
+                // Parse CSV data
+                const rows = csvText.trim().split('\n');
+                const headers = rows[0].split(',');
+                
+                const data = rows.slice(1).map(row => {
+                    const values = row.split(',');
+                    return {
+                        nricFullName: values[0]?.trim(),
+                        emailAddress: values[1]?.trim(),
+                        mobileNumber: values[2]?.trim(),
+                        ticketNumber: values[3]?.trim(),
+                        ticketID: values[4]?.trim(),
+                        timestamp: new Date() // Add actual timestamp from your sheet if available
+                    };
+                }).filter(item => item.nricFullName); // Filter out empty rows
+                
+                updateCheckinDisplay(data);
+                document.getElementById('connectionStatus').className = 'connection-status connected';
+                document.getElementById('connectionStatus').innerHTML = '🟢 Connected';
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                document.getElementById('connectionStatus').innerHTML = '🔴 Connection Error';
+            }
+            */
+        }
+
+        // Update every 3 seconds
+        setInterval(fetchGoogleSheetData, 3000);
+        
+        // Initial load
+        fetchGoogleSheetData();
+        
+        // Update timestamps every 30 seconds
+        setInterval(() => {
+            const timeElements = document.querySelectorAll('.checkin-time');
+            timeElements.forEach((element, index) => {
+                const data = previousData.slice(-7);
+                if (data[index]) {
+                    element.textContent = formatTimeAgo(data[index].timestamp);
+                }
+            });
+        }, 30000);
+    </script>
+</body>
+</html>
