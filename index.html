@@ -1,0 +1,428 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; min-height: 15.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Event Check-in Dashboard&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>* {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-sizing: border-box;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-family: 'Arial', sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>min-height: 100vh;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.dashboard {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>max-width: 1200px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 0 auto;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.header {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 30px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.1);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 15px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>backdrop-filter: blur(10px);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.event-title {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 2.5em;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-shadow: 2px 2px 4px rgba(0,0,0,0.3);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.stats {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gap: 40px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 15px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.stat-box {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.2);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px 25px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.stat-number {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 2em;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: #4CAF50;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.stat-label {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.9em;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>opacity: 0.9;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-list {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.1);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 15px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 25px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>backdrop-filter: blur(10px);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 8px 32px rgba(0,0,0,0.2);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.list-header {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.5em;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding-bottom: 15px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-bottom: 2px solid rgba(255,255,255,0.2);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-item {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-between;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px 20px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 8px 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(255, 255, 255, 0.1);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>transition: all 0.5s ease;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-left: 4px solid #4CAF50;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-item.newest {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: rgba(76, 175, 80, 0.3);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-left: 4px solid #81C784;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>transform: scale(1.02);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-item.slide-up {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>transform: translateY(-60px);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>opacity: 0.7;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.person-info {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>flex: 1;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.person-name {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.3em;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 3px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.person-details {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.9em;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>opacity: 0.8;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.ticket-info {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-align: right;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>flex-shrink: 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.ticket-number {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.4em;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: #FFD700;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-bottom: 3px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-time {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.8em;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>opacity: 0.7;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.new-badge {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: #FF5722;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 4px 8px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 15px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.7em;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>animation: pulse 2s infinite;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-left: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>@keyframes pulse {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>0% { transform: scale(1); }</p>
+<p class="p1"><span class="Apple-converted-space">            </span>50% { transform: scale(1.1); }</p>
+<p class="p1"><span class="Apple-converted-space">            </span>100% { transform: scale(1); }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.no-checkins {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 40px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>opacity: 0.7;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 1.2em;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.connection-status {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>position: fixed;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>top: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>right: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 8px 12px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 5px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 0.8em;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.connected {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: #4CAF50;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.disconnected {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: #F44336;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.age-indicator {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>opacity: 1;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-item:nth-child(1) .age-indicator { opacity: 0.6; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-item:nth-child(2) .age-indicator { opacity: 0.7; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-item:nth-child(3) .age-indicator { opacity: 0.8; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-item:nth-child(4) .age-indicator { opacity: 0.85; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-item:nth-child(5) .age-indicator { opacity: 0.9; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-item:nth-child(6) .age-indicator { opacity: 0.95; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.checkin-item:nth-child(7) .age-indicator { opacity: 1; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="dashboard"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="header"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;h1 class="event-title"&gt;🎫 Lead The Future Conference 2025&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="stats"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-box"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-number" id="checkedInCount"&gt;0&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-label"&gt;Checked In&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-box"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-number"&gt;300&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-label"&gt;Total Expected&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="stat-box"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-number" id="percentageCount"&gt;0%&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="stat-label"&gt;Progress&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="checkin-list"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;h2 class="list-header"&gt;📋 Recent Check-ins (Last 5)&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="checkinItems"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="no-checkins"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>Waiting for first check-in... 🔄</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="connection-status connected" id="connectionStatus"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>🟢 Connected</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// ⚠️ IMPORTANT: Replace this with your actual Google Sheets CSV URL</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Go to your Google Sheet → File → Share → Publish to web → CSV format</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>let previousData = [];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let isFirstLoad = true;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Sample data matching your Google Sheet structure</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let sampleData = [</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{ nricFullName: "Ahmad Bin Abdullah", emailAddress: "ahmad@email.com", mobileNumber: "012-345-6789", ticketNumber: "T001", ticketID: "L001", timestamp: new Date(Date.now() - 300000) },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{ nricFullName: "Siti Nurhaliza", emailAddress: "siti@email.com", mobileNumber: "012-345-6790", ticketNumber: "T002", ticketID: "L002", timestamp: new Date(Date.now() - 240000) },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{ nricFullName: "Raj Kumar", emailAddress: "raj@email.com", mobileNumber: "012-345-6791", ticketNumber: "T003", ticketID: "L003", timestamp: new Date(Date.now() - 180000) },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{ nricFullName: "Lim Wei Ming", emailAddress: "lim@email.com", mobileNumber: "012-345-6792", ticketNumber: "T004", ticketID: "L004", timestamp: new Date(Date.now() - 120000) },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{ nricFullName: "Fatimah Zahra", emailAddress: "fatimah@email.com", mobileNumber: "012-345-6793", ticketNumber: "T005", ticketID: "L005", timestamp: new Date(Date.now() - 60000) }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let sampleIndex = 0;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function formatTimeAgo(timestamp) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const now = new Date();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const diff = now - timestamp;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const seconds = Math.floor(diff / 1000);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const minutes = Math.floor(seconds / 60);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const hours = Math.floor(minutes / 60);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (seconds &lt; 60) return seconds &lt;= 5 ? 'just now' : `${seconds} sec ago`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (minutes &lt; 60) return `${minutes} min ago`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return `${hours}h ${minutes % 60}m ago`;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function updateStats(checkedInCount) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('checkedInCount').textContent = checkedInCount;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const percentage = Math.round((checkedInCount / 300) * 100);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>document.getElementById('percentageCount').textContent = `${percentage}%`;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function createCheckinItem(person, isNewest = false) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const item = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>item.className = `checkin-item age-indicator ${isNewest ? 'newest' : ''}`;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>item.innerHTML = `</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="person-info"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="person-name"&gt;${person.nricFullName}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="person-details"&gt;Mobile: ${person.mobileNumber}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="ticket-info"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="ticket-number"&gt;ID: ${person.ticketID}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="checkin-time"&gt;${formatTimeAgo(person.timestamp)}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>${isNewest ? '&lt;span class="new-badge"&gt;NEW!&lt;/span&gt;' : ''}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>`;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>return item;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function updateCheckinDisplay(data) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const container = document.getElementById('checkinItems');</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (data.length === 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>container.innerHTML = '&lt;div class="no-checkins"&gt;Waiting for first check-in... 🔄&lt;/div&gt;';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Get last 5 entries, oldest first</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const recentCheckins = data.slice(-5);</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Check if there's a new entry</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const hasNewEntry = !isFirstLoad &amp;&amp; data.length &gt; previousData.length;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Clear container</p>
+<p class="p1"><span class="Apple-converted-space">            </span>container.innerHTML = '';</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Add items (oldest to newest)</p>
+<p class="p1"><span class="Apple-converted-space">            </span>recentCheckins.forEach((person, index) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const isNewest = hasNewEntry &amp;&amp; index === recentCheckins.length - 1;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const item = createCheckinItem(person, isNewest);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>container.appendChild(item);</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Add slide-up animation for new entries</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (hasNewEntry &amp;&amp; index &lt; recentCheckins.length - 1) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setTimeout(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>item.classList.add('slide-up');</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>setTimeout(() =&gt; item.classList.remove('slide-up'), 500);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}, 100);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Remove NEW badge after 5 seconds</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (hasNewEntry) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setTimeout(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const newestItem = container.querySelector('.checkin-item.newest');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (newestItem) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>newestItem.classList.remove('newest');</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const badge = newestItem.querySelector('.new-badge');</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>if (badge) badge.remove();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}, 5000);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>updateStats(data.length);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>previousData = [...data];</p>
+<p class="p1"><span class="Apple-converted-space">            </span>isFirstLoad = false;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>async function fetchGoogleSheetData() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// For demonstration, we'll use sample data</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Replace this section with actual Google Sheets API call</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (sampleIndex &lt; sampleData.length) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Simulate new check-ins every 10 seconds</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const currentData = sampleData.slice(0, sampleIndex + 1);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>updateCheckinDisplay(currentData);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>sampleIndex++;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Add random new entries occasionally</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (Math.random() &lt; 0.3) { // 30% chance</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const newPerson = {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>nricFullName: `Test Person ${sampleData.length + 1}`,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>emailAddress: "test@email.com",</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>mobileNumber: "012-345-6700",</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>ticketNumber: `T${String(sampleData.length + 1).padStart(3, '0')}`,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>ticketID: `L${String(sampleData.length + 1).padStart(3, '0')}`,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>timestamp: new Date()</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>};</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>sampleData.push(newPerson);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>updateCheckinDisplay(sampleData);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>/*<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Uncomment and modify this section when connecting to real Google Sheets:</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const response = await fetch(GOOGLE_SHEET_URL);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const csvText = await response.text();</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Parse CSV data</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const rows = csvText.trim().split('\n');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const headers = rows[0].split(',');</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>const data = rows.slice(1).map(row =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const values = row.split(',');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>nricFullName: values[0]?.trim(),</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>emailAddress: values[1]?.trim(),</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>mobileNumber: values[2]?.trim(),</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>ticketNumber: values[3]?.trim(),</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>ticketID: values[4]?.trim(),</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>timestamp: new Date() // Add actual timestamp from your sheet if available</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>};</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}).filter(item =&gt; item.nricFullName); // Filter out empty rows</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>updateCheckinDisplay(data);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('connectionStatus').className = 'connection-status connected';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('connectionStatus').innerHTML = '🟢 Connected';</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>} catch (error) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>console.error('Error fetching data:', error);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('connectionStatus').className = 'connection-status disconnected';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>document.getElementById('connectionStatus').innerHTML = '🔴 Connection Error';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>*/</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Update every 3 seconds</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setInterval(fetchGoogleSheetData, 3000);</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Initial load</p>
+<p class="p1"><span class="Apple-converted-space">        </span>fetchGoogleSheetData();</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Update timestamps every 30 seconds</p>
+<p class="p1"><span class="Apple-converted-space">        </span>setInterval(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const timeElements = document.querySelectorAll('.checkin-time');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>timeElements.forEach((element, index) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const data = previousData.slice(-7);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (data[index]) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>element.textContent = formatTimeAgo(data[index].timestamp);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}, 30000);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
