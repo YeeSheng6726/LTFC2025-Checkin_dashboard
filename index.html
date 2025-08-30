@@ -36,6 +36,19 @@
             color: #333;
         }
 
+        .logo-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo {
+            max-height: 80px;
+            width: auto;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+
         .event-title {
             font-size: 2.5em;
             margin-bottom: 10px;
@@ -244,6 +257,10 @@
                 font-size: 1.8em;
             }
             
+            .logo {
+                max-height: 60px;
+            }
+            
             .checkin-item {
                 flex-direction: column;
                 text-align: center;
@@ -259,6 +276,47 @@
 <body>
     <div class="dashboard">
         <div class="header">
+            <div class="logo-container">
+                <svg class="logo" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+                    <!-- JooyMedia Logo Recreation -->
+                    <!-- J -->
+                    <path d="M 60 60 L 60 140 Q 60 160 40 160 Q 20 160 20 140 L 20 120 L 40 120 L 40 140 Q 40 140 40 140 L 50 140 Q 50 140 50 120 L 50 60 L 70 60 Z" fill="url(#gradient1)"/>
+                    
+                    <!-- First Hexagon (O) -->
+                    <polygon points="120,80 140,60 180,60 200,80 180,140 140,140" fill="url(#gradient2)" stroke="none"/>
+                    <polygon points="135,80 150,70 170,70 185,80 170,130 150,130" fill="white"/>
+                    
+                    <!-- Second Hexagon (O) -->
+                    <polygon points="220,80 240,60 280,60 300,80 280,140 240,140" fill="url(#gradient3)" stroke="none"/>
+                    <polygon points="235,80 250,70 270,70 285,80 270,130 250,130" fill="white"/>
+                    
+                    <!-- Y -->
+                    <path d="M 320 60 L 340 60 L 355 90 L 370 60 L 390 60 L 365 110 L 365 140 L 345 140 L 345 110 Z" fill="url(#gradient4)"/>
+                    
+                    <!-- MEDIA text -->
+                    <text x="200" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">MEDIA</text>
+                    
+                    <!-- Gradients -->
+                    <defs>
+                        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FF4500;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FF6600;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FF6600;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FF8C00;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="gradient4" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FFA500;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FFB347;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
             <h1 class="event-title">🎫 Lead The Future Conference 2025</h1>
             <div class="stats">
                 <div class="stat-box">
@@ -353,13 +411,16 @@
             const uniqueKey = createUniqueKey(person);
             const timestamp = checkinTimestamps.get(uniqueKey) || new Date();
             
+            // Remove "ID: " part from the display and "#" from ticket number
+            const ticketDisplay = person.ticketID || person.ticketNumber || 'N/A';
+            
             item.innerHTML = `
                 <div class="person-info">
                     <div class="person-name">${person.nricFullName || 'Unknown Name'}</div>
-                    <div class="person-details">Ticket: ${person.ticketNumber || 'N/A'} | ID: ${person.ticketID || 'N/A'}</div>
+                    <div class="person-details">Ticket: ${person.ticketNumber || 'N/A'}</div>
                 </div>
                 <div class="ticket-info">
-                    <div class="ticket-number">#${person.ticketID || person.ticketNumber || 'N/A'}</div>
+                    <div class="ticket-number">${ticketDisplay}</div>
                     <div class="checkin-time">${formatTimeAgo(timestamp)}</div>
                 </div>
                 ${isNewest ? '<span class="new-badge">NEW!</span>' : ''}
@@ -387,7 +448,7 @@
                 currentParticipants.add(uniqueKey);
 
                 if (!checkinTimestamps.has(uniqueKey)) {
-                    // This is a truly new participant
+                    // This is a truly new participant - assign current timestamp
                     checkinTimestamps.set(uniqueKey, new Date());
                     
                     if (!isFirstLoad) {
@@ -397,7 +458,8 @@
                 }
             });
 
-            // Get last 5 entries and reverse to show newest first (by check-in time)
+            // Sort data by check-in timestamp (newest first)
+            // The most recently added entries will have the most recent timestamps
             const sortedData = data.slice().sort((a, b) => {
                 const keyA = createUniqueKey(a);
                 const keyB = createUniqueKey(b);
@@ -411,7 +473,7 @@
             // Clear container
             container.innerHTML = '';
             
-            // Add items (newest to oldest by check-in time)
+            // Add items (newest to oldest by timestamp)
             recentCheckins.forEach((person) => {
                 const uniqueKey = createUniqueKey(person);
                 const isNewest = hasNewEntry && uniqueKey === newestParticipantKey;
@@ -555,7 +617,7 @@
                     
                     if (nameElement && ticketElement) {
                         const name = nameElement.textContent;
-                        const ticket = ticketElement.textContent.replace('#', '');
+                        const ticket = ticketElement.textContent;
                         const uniqueKey = `${name}_${ticket}`;
                         const timestamp = checkinTimestamps.get(uniqueKey);
                         
