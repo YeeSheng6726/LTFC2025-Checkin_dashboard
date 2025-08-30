@@ -5,274 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Event Check-in Dashboard</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #FF4500 0%, #FF6600 25%, #FF8C00 50%, #FFA500 75%, #FFB347 100%);
-            color: white;
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .dashboard {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            color: #333;
-        }
-
-        .logo-container {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100px;
-        }
-
-        .logo {
-            max-height: 100px;
-            max-width: 300px;
-            width: auto;
-            height: auto;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-        }
-
-        .event-title {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            color: #FF4500;
-            font-weight: bold;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-top: 15px;
-        }
-
-        .stat-box {
-            background: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            text-align: center;
-            border: 2px solid #FF6600;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #FF4500;
-        }
-
-        .stat-label {
-            font-size: 0.9em;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .checkin-list {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .list-header {
-            font-size: 1.5em;
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #FF6600;
-            color: #FF4500;
-            font-weight: bold;
-        }
-
-        .checkin-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            margin: 8px 0;
-            background: white;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            border-left: 4px solid #FF6600;
-            border: 2px solid #FFB347;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            color: #333;
-        }
-
-        .checkin-item.newest {
-            background: #FFF8DC;
-            border-left: 4px solid #FF4500;
-            border: 2px solid #FF4500;
-            box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
-            transform: scale(1.02);
-            animation: shake 0.5s ease-in-out, newItemGlow 5s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0) scale(1.02); }
-            25% { transform: translateX(-5px) scale(1.02); }
-            75% { transform: translateX(5px) scale(1.02); }
-        }
-
-        @keyframes newItemGlow {
-            0%, 100% { 
-                background: #FFF8DC;
-                box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
-            }
-            50% { 
-                background: #FFEBCD;
-                box-shadow: 0 0 30px rgba(255, 69, 0, 0.6);
-            }
-        }
-
-        .person-info {
-            flex: 1;
-        }
-
-        .person-name {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 3px;
-            color: #333;
-        }
-
-        .person-details {
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .ticket-info {
-            text-align: right;
-            flex-shrink: 0;
-        }
-
-        .ticket-number {
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #FF4500;
-            margin-bottom: 3px;
-        }
-
-        .checkin-time {
-            font-size: 0.8em;
-            color: #888;
-        }
-
-        .new-badge {
-            background: #FF4500;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 0.7em;
-            font-weight: bold;
-            animation: pulse 1s infinite;
-            margin-left: 10px;
-            box-shadow: 0 2px 10px rgba(255, 69, 0, 0.5);
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 2px 10px rgba(255, 69, 0, 0.5); }
-            50% { transform: scale(1.1); box-shadow: 0 4px 20px rgba(255, 69, 0, 0.8); }
-            100% { transform: scale(1); box-shadow: 0 2px 10px rgba(255, 69, 0, 0.5); }
-        }
-
-        .no-checkins {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 1.2em;
-            font-weight: 600;
-        }
-
-        .connection-status {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.8em;
-            font-weight: bold;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
-        }
-
-        .connected {
-            background: rgba(76, 175, 80, 0.9);
-            color: white;
-        }
-
-        .disconnected {
-            background: rgba(244, 67, 54, 0.9);
-            color: white;
-        }
-
-        .loading {
-            background: rgba(255, 152, 0, 0.9);
-            color: white;
-        }
-
-        .debug-info {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            font-family: monospace;
-            font-size: 0.8em;
-            border: 2px solid #FF6600;
-            color: #333;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .debug-info strong {
-            color: #FF4500;
-        }
-
-        @media (max-width: 768px) {
-            .stats {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .event-title {
-                font-size: 1.8em;
-            }
-            
-            .logo {
-                max-height: 80px;
-            }
-            
-            .checkin-item {
-                flex-direction: column;
-                text-align: center;
-                gap: 10px;
-            }
-            
-            .ticket-info {
-                text-align: center;
-            }
-        }
+        /* 🔥 KEEPING ALL YOUR STYLES INTACT */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: linear-gradient(135deg, #FF4500 0%, #FF6600 25%, #FF8C00 50%, #FFA500 75%, #FFB347 100%); color: white; padding: 20px; min-height: 100vh; }
+        .dashboard { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.2); color: #333; }
+        .logo-container { margin-bottom: 20px; display: flex; justify-content: center; align-items: center; min-height: 100px; }
+        .logo { max-height: 100px; max-width: 300px; width: auto; height: auto; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); }
+        .event-title { font-size: 2.5em; margin-bottom: 10px; color: #FF4500; font-weight: bold; }
+        .stats { display: flex; justify-content: center; gap: 40px; margin-top: 15px; }
+        .stat-box { background: white; padding: 15px 25px; border-radius: 10px; text-align: center; border: 2px solid #FF6600; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 2em; font-weight: bold; color: #FF4500; }
+        .stat-label { font-size: 0.9em; color: #333; font-weight: 600; }
+        .checkin-list { background: rgba(255, 255, 255, 0.95); border-radius: 15px; padding: 25px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .list-header { font-size: 1.5em; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #FF6600; color: #FF4500; font-weight: bold; }
+        .checkin-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; margin: 8px 0; background: white; border-radius: 10px; transition: all 0.3s ease; border-left: 4px solid #FF6600; border: 2px solid #FFB347; box-shadow: 0 2px 10px rgba(0,0,0,0.1); color: #333; }
+        .checkin-item.newest { background: #FFF8DC; border-left: 4px solid #FF4500; border: 2px solid #FF4500; box-shadow: 0 0 20px rgba(255, 69, 0, 0.4); transform: scale(1.02); animation: shake 0.5s ease-in-out, newItemGlow 5s ease-in-out; }
+        @keyframes shake { 0%, 100% { transform: translateX(0) scale(1.02); } 25% { transform: translateX(-5px) scale(1.02); } 75% { transform: translateX(5px) scale(1.02); } }
+        @keyframes newItemGlow { 0%, 100% { background: #FFF8DC; box-shadow: 0 0 20px rgba(255, 69, 0, 0.4); } 50% { background: #FFEBCD; box-shadow: 0 0 30px rgba(255, 69, 0, 0.6); } }
+        .person-info { flex: 1; }
+        .person-name { font-size: 1.3em; font-weight: bold; margin-bottom: 3px; color: #333; }
+        .person-details { font-size: 0.9em; color: #666; }
+        .ticket-info { text-align: right; flex-shrink: 0; }
+        .ticket-number { font-size: 1.4em; font-weight: bold; color: #FF4500; margin-bottom: 3px; }
+        .checkin-time { font-size: 0.8em; color: #888; }
+        .new-badge { background: #FF4500; color: white; padding: 4px 8px; border-radius: 15px; font-size: 0.7em; font-weight: bold; animation: pulse 1s infinite; margin-left: 10px; box-shadow: 0 2px 10px rgba(255, 69, 0, 0.5); }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 2px 10px rgba(255, 69, 0, 0.5); } 50% { transform: scale(1.1); box-shadow: 0 4px 20px rgba(255, 69, 0, 0.8); } 100% { transform: scale(1); box-shadow: 0 2px 10px rgba(255, 69, 0, 0.5); } }
+        .no-checkins { text-align: center; padding: 40px; color: #666; font-size: 1.2em; font-weight: 600; }
+        .connection-status { position: fixed; top: 10px; right: 10px; padding: 8px 12px; border-radius: 5px; font-size: 0.8em; font-weight: bold; border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px); }
+        .connected { background: rgba(76, 175, 80, 0.9); color: white; }
+        .disconnected { background: rgba(244, 67, 54, 0.9); color: white; }
+        .loading { background: rgba(255, 152, 0, 0.9); color: white; }
+        .debug-info { background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 10px; margin-top: 20px; font-family: monospace; font-size: 0.8em; border: 2px solid #FF6600; color: #333; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .debug-info strong { color: #FF4500; }
+        @media (max-width: 768px) { .stats { flex-direction: column; gap: 15px; } .event-title { font-size: 1.8em; } .logo { max-height: 80px; } .checkin-item { flex-direction: column; text-align: center; gap: 10px; } .ticket-info { text-align: center; } }
     </style>
 </head>
 <body>
@@ -281,7 +47,6 @@
             <div class="logo-container">
                 <img class="logo" id="logoImage" alt="JooyMedia Logo" style="display: none;">
             </div>
-            <!-- ❌ Removed 🎫 -->
             <h1 class="event-title">Lead The Future Conference 2025</h1>
             <div class="stats">
                 <div class="stat-box">
@@ -289,7 +54,6 @@
                     <div class="stat-label">Checked In</div>
                 </div>
                 <div class="stat-box">
-                    <!-- ✅ Changed to 200 -->
                     <div class="stat-number">200</div>
                     <div class="stat-label">Total Expected</div>
                 </div>
@@ -304,7 +68,7 @@
             <h2 class="list-header">📋 Recent Check-ins (Latest First)</h2>
             <div id="checkinItems">
                 <div class="no-checkins">
-                    Loading check-in data from Google Sheets... 🔄
+                    Loading check-in data from API... 🔄
                 </div>
             </div>
         </div>
@@ -325,11 +89,10 @@
     </div>
 
 <script>
-    const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
-    
+    // ✅ CHANGE ONLY THIS LINE TO YOUR N8N API ENDPOINT
+    const API_URL = 'https://your-n8n-domain/webhook/conference';
+
     let isFirstLoad = true;
-    let fetchAttempts = 0;
-    let latestFetchId = 0; // ✅ track latest fetch
 
     function loadLogo() {
         const logoImg = document.getElementById('logoImage');
@@ -347,7 +110,7 @@
 
     function updateStats(checkedInCount) {
         document.getElementById('checkedInCount').textContent = checkedInCount;
-        const percentage = Math.round((checkedInCount / 200) * 100); // ✅ use 200
+        const percentage = Math.round((checkedInCount / 200) * 100);
         document.getElementById('percentageCount').textContent = `${percentage}%`;
     }
 
@@ -372,7 +135,7 @@
 
     function updateCheckinDisplay(data) {
         const container = document.getElementById('checkinItems');
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             container.innerHTML = '<div class="no-checkins">No check-ins yet... Waiting 📊</div>';
             updateStats(0);
             return;
@@ -387,39 +150,21 @@
         isFirstLoad = false;
     }
 
-    function parseCSVRow(row) {
-        const result=[], chars=row.split(''); let cur='', inQ=false;
-        chars.forEach(c=>{
-            if(c==='"'){inQ=!inQ;}
-            else if(c===','&&!inQ){result.push(cur.trim()); cur='';}
-            else cur+=c;
-        });
-        result.push(cur.trim());
-        return result;
-    }
-
-    async function fetchGoogleSheetData() {
-        fetchAttempts++;
-        const fetchId = ++latestFetchId; // mark this fetch
+    async function fetchAPIData() {
         try {
-            const response = await fetch(GOOGLE_SHEET_URL + '&_=' + Date.now(), {cache:'no-store'});
+            const response = await fetch(API_URL, {cache:'no-store'});
             if (!response.ok) throw new Error('HTTP ' + response.status);
-            const csv = await response.text();
-            if (fetchId !== latestFetchId) return; // ✅ ignore old fetches
-            const rows = csv.trim().split('\n');
-            if (rows.length<2){ updateCheckinDisplay([]); return; }
-            const data=[];
-            for(let i=1;i<rows.length;i++){
-                const v=parseCSVRow(rows[i]);
-                if(v[0]) data.push({nricFullName:v[0],emailAddress:v[1],mobileNumber:v[2],ticketNumber:v[3],ticketID:v[4]});
-            }
-            updateCheckinDisplay(data);
-        } catch(e){ console.error(e); }
+            const json = await response.json();
+            // ✅ Expecting n8n to return { "data": [ { nricFullName:..., ticketNumber:... } ] }
+            updateCheckinDisplay(json.data || []);
+        } catch(e){
+            console.error(e);
+        }
     }
 
     loadLogo();
-    fetchGoogleSheetData();
-    setInterval(fetchGoogleSheetData, 8000);
+    fetchAPIData();
+    setInterval(fetchAPIData, 8000);
 </script>
 </body>
 </html>
