@@ -325,218 +325,36 @@
         🟡 Loading...
     </div>
 
-    <script>
+        <script>
         // ⚠️ REPLACE WITH YOUR ACTUAL GOOGLE SHEETS CSV URL
         const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
         
         let isFirstLoad = true;
         let fetchAttempts = 0;
         let lastDataCount = 0;
-
-        // Logo loading function with multiple attempts
-        function loadLogo() {
-            const logoImg = document.getElementById('logoImage');
-            const possibleNames = [
-                'JooyMedia_logo.png',
-                'JooyMedia-logo.png', 
-                'jooy-media-logo.png',
-                'logo.png',
-                'JooyMedia.png'
-            ];
-            
-            let attemptIndex = 0;
-            
-            function tryNextLogo() {
-                if (attemptIndex >= possibleNames.length) {
-                    updateDebugInfo('Logo: All attempts failed', [], null, 'Logo loading failed');
-                    return;
-                }
-                
-                const logoUrl = possibleNames[attemptIndex];
-                logoImg.src = logoUrl;
-                logoImg.onload = function() {
-                    logoImg.style.display = 'block';
-                    updateDebugInfo('Logo: ✅ Loaded successfully (' + logoUrl + ')', [], null, 'Logo loaded');
-                };
-                logoImg.onerror = function() {
-                    attemptIndex++;
-                    setTimeout(tryNextLogo, 100);
-                };
-                
-                updateDebugInfo('Logo: Trying ' + logoUrl, [], null, 'Attempting logo load');
-            }
-            
-            tryNextLogo();
-        }
-
-        function updateDebugInfo(status, dataArray = [], error = null, extraInfo = '') {
-            const debugElement = document.getElementById('debugInfo');
-            const now = new Date().toLocaleTimeString();
-            const dataCount = dataArray.length;
-            
-            // Show the actual order from sheet
-            let sheetOrder = 'Not loaded';
-            if (dataArray.length > 0) {
-                sheetOrder = dataArray.map((person, index) => `${index + 1}. ${person.nricFullName || 'Unknown'}`).join(', ');
-                if (sheetOrder.length > 100) {
-                    sheetOrder = sheetOrder.substring(0, 100) + '...';
-                }
-            }
-            
-            debugElement.innerHTML = `
-                <strong>🔍 DETAILED DEBUG INFO:</strong><br>
-                Status: ${status}<br>
-                Last fetch: ${now}<br>
-                Total rows in sheet: ${dataCount}<br>
-                Displaying last: ${Math.min(5, dataCount)} entries<br>
-                Sheet order: ${sheetOrder}<br>
-                Fetch attempts: ${fetchAttempts}<br>
-                ${extraInfo ? `Extra: ${extraInfo}<br>` : ''}
-                ${error ? `❌ Error: ${error}<br>` : ''}
-                Sheet URL: ${GOOGLE_SHEET_URL.substring(0, 50)}...
-            `;
-        }
-
-        function formatTimeAgo(index) {
-            // Simple time calculation based on position
-            const minutesAgo = index * 3; // Each position = 3 minutes older
-            if (minutesAgo < 1) return 'just now';
-            if (minutesAgo < 60) return `${minutesAgo} min ago`;
-            const hours = Math.floor(minutesAgo / 60);
-            if (hours < 24) return `${hours}h ago`;
-            return `${Math.floor(hours / 24)}d ago`;
-        }
-
-        function updateStats(checkedInCount) {
-            document.getElementById('checkedInCount').textContent = checkedInCount;
-            const percentage = Math.round((checkedInCount / 300) * 100);
-            document.getElementById('percentageCount').textContent = `${percentage}%`;
-        }
-
-        function createCheckinItem(person, index, isNewest = false) {
-            const item = document.createElement('div');
-            item.className = `checkin-item ${isNewest ? 'newest' : ''}`;
-            
-            // Clean up ticket display - remove # if present
-            let ticketDisplay = person.ticketID || person.ticketNumber || 'N/A';
-            if (ticketDisplay.startsWith('#')) {
-                ticketDisplay = ticketDisplay.substring(1);
-            }
-            
-            item.innerHTML = `
-                <div class="person-info">
-                    <div class="person-name">${person.nricFullName || 'Unknown Name'}</div>
-                    <div class="person-details">Ticket: ${person.ticketNumber || 'N/A'}</div>
-                </div>
-                <div class="ticket-info">
-                    <div class="ticket-number">${ticketDisplay}</div>
-                    <div class="checkin-time">${formatTimeAgo(index)}</div>
-                </div>
-                ${isNewest ? '<span class="new-badge">NEW!</span>' : ''}
-            `;
-            
-            return item;
-        }
-
-        function updateCheckinDisplay(data) {
-            const container = document.getElementById('checkinItems');
-            
-            if (data.length === 0) {
-                container.innerHTML = '<div class="no-checkins">No check-ins yet... Waiting for data from Google Sheets 📊</div>';
-                updateStats(0);
-                return;
-            }
-
-            console.log('🔍 DEBUGGING DATA ORDER:');
-            console.log('Original data from sheet (in order):', data);
-            
-            // Take EXACTLY the last 5 entries from the Google Sheet
-            // These represent the most recent check-ins
-            const lastFiveEntries = data.slice(-5);
-            
-            console.log('Last 5 entries from sheet:', lastFiveEntries);
-            
-            // Reverse the array so the NEWEST (last row from sheet) appears FIRST on dashboard
-            const displayOrder = [...lastFiveEntries].reverse();
-            
-            console.log('Display order (reversed for newest first):', displayOrder);
-            
-            // Check if we have new data
-            const hasNewEntry = data.length > lastDataCount;
-            lastDataCount = data.length;
-            
-            // Clear container
-            container.innerHTML = '';
-            
-            // Add items in display order (newest first)
-            displayOrder.forEach((person, index) => {
-                const isNewest = hasNewEntry && index === 0 && !isFirstLoad;
-                const item = createCheckinItem(person, index, isNewest);
-                container.appendChild(item);
-            });
-            
-            // Remove NEW badge after 5 seconds
-            if (hasNewEntry && !isFirstLoad) {
-                setTimeout(() => {
-                    const newestItem = container.querySelector('.checkin-item.newest');
-                    if (newestItem) {
-                        newestItem.classList.remove('newest');
-                        const badge = newestItem.querySelector('.new-badge');
-                        if (badge) badge.remove();
-                    }
-                }, 5000);
-            }
-            
-            updateStats(data.length);
-            isFirstLoad = false;
-        }
-
-        function parseCSVRow(row) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < row.length; i++) {
-                const char = row[i];
-                
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim().replace(/^"|"$/g, ''));
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            result.push(current.trim().replace(/^"|"$/g, ''));
-            
-            return result;
-        }
-
+    
         async function fetchGoogleSheetData() {
             fetchAttempts++;
-            
             try {
                 updateDebugInfo('🔄 Fetching from Google Sheets...', [], null, 'Making request...');
                 
-                // Add cache busting to prevent stale data
-                const response = await fetch(GOOGLE_SHEET_URL + '&v=' + Date.now());
+                // Add cache busting + disable cache
+                const response = await fetch(GOOGLE_SHEET_URL + '&v=' + Date.now(), {
+                    cache: "no-store",
+                    headers: {
+                        "Cache-Control": "no-cache, no-store, must-revalidate",
+                        "Pragma": "no-cache",
+                        "Expires": "0"
+                    }
+                });
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 
                 const csvText = await response.text();
-                
-                if (!csvText || csvText.trim().length === 0) {
-                    throw new Error('Empty response from Google Sheets');
-                }
-                
-                console.log('📄 Raw CSV data received:', csvText.substring(0, 300) + '...');
-                
-                // Parse CSV data
+                if (!csvText || csvText.trim().length === 0) throw new Error('Empty response from Google Sheets');
+    
+                // Parse CSV (same as before)
                 const rows = csvText.trim().split('\n');
-                
                 if (rows.length < 2) {
                     updateDebugInfo('Connected but no data rows', [], null, 'Only header row found');
                     updateCheckinDisplay([]);
@@ -546,33 +364,20 @@
                 }
                 
                 const headers = parseCSVRow(rows[0]);
-                console.log('📋 Headers found:', headers);
-                
                 const data = [];
-                
-                // Process rows in EXACT ORDER they appear in the sheet
                 for (let i = 1; i < rows.length; i++) {
                     const values = parseCSVRow(rows[i]);
-                    
-                    // Only process rows with actual name data
-                    if (values.length > 0 && values[0] && values[0].trim() !== '') {
-                        const rowData = {
+                    if (values.length > 0 && values[0]?.trim() !== '') {
+                        data.push({
                             nricFullName: values[0]?.trim() || '',
                             emailAddress: values[1]?.trim() || '',
                             mobileNumber: values[2]?.trim() || '',
                             ticketNumber: values[3]?.trim() || '',
                             ticketID: values[4]?.trim() || ''
-                        };
-                        
-                        if (rowData.nricFullName) {
-                            data.push(rowData);
-                            console.log(`Row ${i}: ${rowData.nricFullName} - ${rowData.ticketID}`);
-                        }
+                        });
                     }
                 }
-                
-                console.log('✅ Final parsed data (sheet order):', data);
-                
+    
                 updateCheckinDisplay(data);
                 updateDebugInfo('✅ Successfully loaded data', data, null, `Found ${data.length} check-ins`);
                 
@@ -582,10 +387,8 @@
             } catch (error) {
                 console.error('❌ Error fetching data:', error);
                 updateDebugInfo('❌ Connection failed', [], error.message, 'Check network/URL');
-                
                 document.getElementById('connectionStatus').className = 'connection-status disconnected';
                 document.getElementById('connectionStatus').innerHTML = '🔴 Error';
-                
                 if (isFirstLoad) {
                     document.getElementById('checkinItems').innerHTML = `
                         <div class="no-checkins">
@@ -596,15 +399,12 @@
                 }
             }
         }
-
-        // Load logo when page loads
-        loadLogo();
-        
+    
         // Initial data load
         fetchGoogleSheetData();
-        
-        // Update every 8 seconds
-        setInterval(fetchGoogleSheetData, 8000);
+    
+        // Update every 3 seconds (instead of 8)
+        setInterval(fetchGoogleSheetData, 3000);
     </script>
 </body>
 </html>
