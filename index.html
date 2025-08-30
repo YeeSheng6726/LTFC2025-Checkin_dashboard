@@ -305,6 +305,8 @@
         let previousData = [];
         let isFirstLoad = true;
         let fetchAttempts = 0;
+        let checkinTimestamps = new Map(); // Store when each person first checked in
+        let seenParticipants = new Set(); // Track which participants we've seen before
 
         function updateDebugInfo(status, dataCount = 0, error = null) {
             const debugElement = document.getElementById('debugInfo');
@@ -323,13 +325,14 @@
         function formatTimeAgo(timestamp) {
             const now = new Date();
             const diff = now - timestamp;
-            const seconds = Math.floor(diff / 1000);
-            const minutes = Math.floor(seconds / 60);
+            const minutes = Math.floor(diff / 60000); // Convert to minutes
             const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
 
-            if (seconds < 60) return seconds <= 5 ? 'just now' : `${seconds} sec ago`;
+            if (minutes < 1) return 'just now';
             if (minutes < 60) return `${minutes} min ago`;
-            return `${hours}h ${minutes % 60}m ago`;
+            if (hours < 24) return `${hours}h ${minutes % 60}m ago`;
+            return `${days}d ${hours % 24}h ago`;
         }
 
         function updateStats(checkedInCount) {
@@ -338,19 +341,25 @@
             document.getElementById('percentageCount').textContent = `${percentage}%`;
         }
 
+        function createUniqueKey(person) {
+            // Create a unique identifier for each person
+            return `${person.nricFullName}_${person.ticketID || person.ticketNumber}`;
+        }
+
         function createCheckinItem(person, isNewest = false) {
             const item = document.createElement('div');
             item.className = `checkin-item ${isNewest ? 'newest' : ''}`;
             
-            const timestamp = person.timestamp || new Date();
+            const uniqueKey = createUniqueKey(person);
+            const timestamp = checkinTimestamps.get(uniqueKey) || new Date();
             
             item.innerHTML = `
                 <div class="person-info">
                     <div class="person-name">${person.nricFullName || 'Unknown Name'}</div>
-                    <div class="person-details">Mobile: ${person.mobileNumber || 'N/A'} | Email: ${person.emailAddress || 'N/A'}</div>
+                    <div class="person-details">Ticket: ${person.ticketNumber || 'N/A'} | ID: ${person.ticketID || 'N/A'}</div>
                 </div>
                 <div class="ticket-info">
-                    <div class="ticket-number">ID: ${person.ticketID || person.ticketNumber || 'N/A'}</div>
+                    <div class="ticket-number">#${person.ticketID || person.ticketNumber || 'N/A'}</div>
                     <div class="checkin-time">${formatTimeAgo(timestamp)}</div>
                 </div>
                 ${isNewest ? '<span class="new-badge">NEW!</span>' : ''}
@@ -368,18 +377,44 @@
                 return;
             }
 
-            // Get last 5 entries and reverse to show newest first
-            const recentCheckins = data.slice(-5).reverse();
-            
-            // Check if there's a new entry
-            const hasNewEntry = !isFirstLoad && data.length > previousData.length;
+            // Track new participants and assign timestamps
+            const currentParticipants = new Set();
+            let hasNewEntry = false;
+            let newestParticipantKey = null;
+
+            data.forEach(person => {
+                const uniqueKey = createUniqueKey(person);
+                currentParticipants.add(uniqueKey);
+
+                if (!checkinTimestamps.has(uniqueKey)) {
+                    // This is a truly new participant
+                    checkinTimestamps.set(uniqueKey, new Date());
+                    
+                    if (!isFirstLoad) {
+                        hasNewEntry = true;
+                        newestParticipantKey = uniqueKey;
+                    }
+                }
+            });
+
+            // Get last 5 entries and reverse to show newest first (by check-in time)
+            const sortedData = data.slice().sort((a, b) => {
+                const keyA = createUniqueKey(a);
+                const keyB = createUniqueKey(b);
+                const timeA = checkinTimestamps.get(keyA) || new Date(0);
+                const timeB = checkinTimestamps.get(keyB) || new Date(0);
+                return timeB - timeA; // Newest first
+            });
+
+            const recentCheckins = sortedData.slice(0, 5);
             
             // Clear container
             container.innerHTML = '';
             
-            // Add items (newest to oldest)
-            recentCheckins.forEach((person, index) => {
-                const isNewest = hasNewEntry && index === 0; // First item is newest
+            // Add items (newest to oldest by check-in time)
+            recentCheckins.forEach((person) => {
+                const uniqueKey = createUniqueKey(person);
+                const isNewest = hasNewEntry && uniqueKey === newestParticipantKey;
                 const item = createCheckinItem(person, isNewest);
                 container.appendChild(item);
             });
@@ -466,8 +501,7 @@
                             emailAddress: values[1]?.replace(/"/g, '').trim(),
                             mobileNumber: values[2]?.replace(/"/g, '').trim(),
                             ticketNumber: values[3]?.replace(/"/g, '').trim(),
-                            ticketID: values[4]?.replace(/"/g, '').trim(),
-                            timestamp: new Date() // Add timestamp column to your sheet if needed
+                            ticketID: values[4]?.replace(/"/g, '').trim()
                         };
                         
                         if (rowData.nricFullName) {
@@ -513,10 +547,22 @@
         // Update timestamps every 30 seconds
         setInterval(() => {
             const timeElements = document.querySelectorAll('.checkin-time');
-            timeElements.forEach((element, index) => {
-                const data = previousData.slice(-5).reverse(); // Match the display order
-                if (data[index]) {
-                    element.textContent = formatTimeAgo(data[index].timestamp);
+            timeElements.forEach((element) => {
+                const checkinItem = element.closest('.checkin-item');
+                if (checkinItem) {
+                    const nameElement = checkinItem.querySelector('.person-name');
+                    const ticketElement = checkinItem.querySelector('.ticket-number');
+                    
+                    if (nameElement && ticketElement) {
+                        const name = nameElement.textContent;
+                        const ticket = ticketElement.textContent.replace('#', '');
+                        const uniqueKey = `${name}_${ticket}`;
+                        const timestamp = checkinTimestamps.get(uniqueKey);
+                        
+                        if (timestamp) {
+                            element.textContent = formatTimeAgo(timestamp);
+                        }
+                    }
                 }
             });
         }, 30000);
