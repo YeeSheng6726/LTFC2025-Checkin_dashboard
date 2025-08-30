@@ -280,7 +280,7 @@
             <h2 class="list-header">📋 Recent Check-ins (Latest First)</h2>
             <div id="checkinItems">
                 <div class="no-checkins">
-                    Loading check-in data... 🔄
+                    Loading check-in data from Google Sheets... 🔄
                 </div>
             </div>
         </div>
@@ -305,14 +305,6 @@
         let previousData = [];
         let isFirstLoad = true;
         let fetchAttempts = 0;
-
-        // Sample data for demonstration (remove when connecting to real sheet)
-        let sampleData = [
-            { nricFullName: "Ahmad Bin Abdullah", emailAddress: "ahmad@email.com", mobileNumber: "012-345-6789", ticketNumber: "T001", ticketID: "L001", timestamp: new Date(Date.now() - 300000) },
-            { nricFullName: "Siti Nurhaliza", emailAddress: "siti@email.com", mobileNumber: "012-345-6790", ticketNumber: "T002", ticketID: "L002", timestamp: new Date(Date.now() - 240000) },
-            { nricFullName: "Raj Kumar", emailAddress: "raj@email.com", mobileNumber: "012-345-6791", ticketNumber: "T003", ticketID: "L003", timestamp: new Date(Date.now() - 180000) }
-        ];
-        let sampleIndex = sampleData.length;
 
         function updateDebugInfo(status, dataCount = 0, error = null) {
             const debugElement = document.getElementById('debugInfo');
@@ -371,7 +363,7 @@
             const container = document.getElementById('checkinItems');
             
             if (data.length === 0) {
-                container.innerHTML = '<div class="no-checkins">No check-ins yet... 🔄</div>';
+                container.innerHTML = '<div class="no-checkins">No check-ins yet... Waiting for data from Google Sheets 📊</div>';
                 updateStats(0);
                 return;
             }
@@ -392,7 +384,7 @@
                 container.appendChild(item);
             });
             
-            // Remove NEW badge and animation after 5 seconds (changed from 3 seconds)
+            // Remove NEW badge and animation after 5 seconds
             if (hasNewEntry) {
                 setTimeout(() => {
                     const newestItem = container.querySelector('.checkin-item.newest');
@@ -401,7 +393,7 @@
                         const badge = newestItem.querySelector('.new-badge');
                         if (badge) badge.remove();
                     }
-                }, 5000); // Changed from 3000 to 5000 milliseconds
+                }, 5000);
             }
             
             updateStats(data.length);
@@ -434,28 +426,8 @@
         async function fetchGoogleSheetData() {
             fetchAttempts++;
             
-            // For demo purposes - simulate new check-ins
-            if (Math.random() < 0.2) { // 20% chance to add new person
-                const names = ["Ali Rahman", "Chen Wei", "Priya Sharma", "David Tan", "Maria Santos", "Ahmed Hassan", "Lisa Wong", "Ravi Kumar"];
-                const randomName = names[Math.floor(Math.random() * names.length)];
-                const newPerson = {
-                    nricFullName: randomName,
-                    emailAddress: randomName.toLowerCase().replace(' ', '.') + "@email.com",
-                    mobileNumber: "012-" + Math.floor(Math.random() * 900 + 100) + "-" + Math.floor(Math.random() * 9000 + 1000),
-                    ticketNumber: "T" + String(sampleData.length + 1).padStart(3, '0'),
-                    ticketID: "L" + String(sampleData.length + 1).padStart(3, '0'),
-                    timestamp: new Date()
-                };
-                sampleData.push(newPerson);
-                updateCheckinDisplay(sampleData);
-                updateDebugInfo('Connected - Demo Mode', sampleData.length);
-                document.getElementById('connectionStatus').className = 'connection-status connected';
-                document.getElementById('connectionStatus').innerHTML = '🟢 Connected (Demo)';
-                return;
-            }
-            
             try {
-                updateDebugInfo('Fetching data...', previousData.length);
+                updateDebugInfo('Fetching data from Google Sheets...', previousData.length);
                 
                 const response = await fetch(GOOGLE_SHEET_URL);
                 
@@ -473,8 +445,10 @@
                 const rows = csvText.trim().split('\n');
                 
                 if (rows.length < 2) {
-                    updateDebugInfo('No data rows found', 0);
+                    updateDebugInfo('Google Sheets connected but no data rows found', 0);
                     updateCheckinDisplay([]);
+                    document.getElementById('connectionStatus').className = 'connection-status connected';
+                    document.getElementById('connectionStatus').innerHTML = '🟢 Connected - No Data';
                     return;
                 }
                 
@@ -502,22 +476,31 @@
                     }
                 }
                 
-                console.log('Parsed data:', data);
+                console.log('Parsed data from Google Sheets:', data);
                 
                 updateCheckinDisplay(data);
-                updateDebugInfo('Connected - Data loaded successfully', data.length);
+                updateDebugInfo('✅ Successfully connected to Google Sheets', data.length);
                 
                 document.getElementById('connectionStatus').className = 'connection-status connected';
                 document.getElementById('connectionStatus').innerHTML = '🟢 Connected';
                 
             } catch (error) {
-                console.error('Error fetching data:', error);
-                updateDebugInfo('Connection Error - Using Demo Mode', sampleData.length, error.message);
+                console.error('Error fetching Google Sheets data:', error);
+                updateDebugInfo('❌ Error connecting to Google Sheets', previousData.length, error.message);
                 
-                // Fallback to demo mode
-                updateCheckinDisplay(sampleData);
-                document.getElementById('connectionStatus').className = 'connection-status loading';
-                document.getElementById('connectionStatus').innerHTML = '🟡 Demo Mode';
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                document.getElementById('connectionStatus').innerHTML = '🔴 Connection Error';
+                
+                // Show error message in the checkin area if this is the first load
+                if (isFirstLoad || previousData.length === 0) {
+                    document.getElementById('checkinItems').innerHTML = `
+                        <div class="no-checkins">
+                            ❌ Unable to connect to Google Sheets<br>
+                            <small>Please check your Google Sheets URL and make sure it's published as CSV</small>
+                        </div>
+                    `;
+                }
+                // If we have previous data, keep showing it instead of clearing it
             }
         }
 
