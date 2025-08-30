@@ -283,14 +283,14 @@
                 <!-- Try multiple possible logo file names -->
                 <img class="logo" id="logoImage" alt="JooyMedia Logo" style="display: none;">
             </div>
-            <h1 class="event-title">Lead The Future Conference 2025</h1>
+            <h1 class="event-title">🎫 Lead The Future Conference 2025</h1>
             <div class="stats">
                 <div class="stat-box">
                     <div class="stat-number" id="checkedInCount">0</div>
                     <div class="stat-label">Checked In</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-number">200</div>
+                    <div class="stat-number">300</div>
                     <div class="stat-label">Total Expected</div>
                 </div>
                 <div class="stat-box">
@@ -326,12 +326,8 @@
     </div>
 
     <script>
-        // ✅ Correct CSV URL (from Publish to Web)
-        const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv";
-
-        
-        // Backup URL format
-        const BACKUP_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
+        // ⚠️ REPLACE WITH YOUR ACTUAL GOOGLE SHEETS CSV URL
+        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
         
         let isFirstLoad = true;
         let fetchAttempts = 0;
@@ -413,7 +409,7 @@
 
         function updateStats(checkedInCount) {
             document.getElementById('checkedInCount').textContent = checkedInCount;
-            const percentage = Math.round((checkedInCount / 200) * 100);
+            const percentage = Math.round((checkedInCount / 300) * 100);
             document.getElementById('percentageCount').textContent = `${percentage}%`;
         }
 
@@ -448,8 +444,6 @@
             if (data.length === 0) {
                 container.innerHTML = '<div class="no-checkins">No check-ins yet... Waiting for data from Google Sheets 📊</div>';
                 updateStats(0);
-                // Reset data tracking when no data
-                lastDataCount = 0;
                 return;
             }
 
@@ -467,10 +461,11 @@
             
             console.log('Display order (reversed for newest first):', displayOrder);
             
-            // Check if we have new data (but handle deletions properly)
+            // Check if we have new data
             const hasNewEntry = data.length > lastDataCount;
+            lastDataCount = data.length;
             
-            // ALWAYS clear container to handle deletions properly
+            // Clear container
             container.innerHTML = '';
             
             // Add items in display order (newest first)
@@ -493,7 +488,6 @@
             }
             
             updateStats(data.length);
-            lastDataCount = data.length;
             isFirstLoad = false;
         }
 
@@ -522,130 +516,83 @@
         async function fetchGoogleSheetData() {
             fetchAttempts++;
             
-            // Try primary URL first, then backup
-            const urlsToTry = [GOOGLE_SHEET_URL, BACKUP_SHEET_URL];
-            
-            for (let urlIndex = 0; urlIndex < urlsToTry.length; urlIndex++) {
-                const currentUrl = urlsToTry[urlIndex];
+            try {
+                updateDebugInfo('🔄 Fetching from Google Sheets...', [], null, 'Making request...');
                 
-                try {
-                    updateDebugInfo(`🔄 Attempting URL ${urlIndex + 1}/2: ${currentUrl.substring(0, 50)}...`, [], null, 'Making request...');
-                    
-                    // STRONG cache busting to prevent stale data
-                    const cacheBuster = Date.now() + Math.random().toString(36).substr(2, 9);
-                    const fullUrl = currentUrl + (currentUrl.includes('?') ? '&' : '?') + `v=${cacheBuster}&cb=${cacheBuster}`;
-                    
-                    const response = await fetch(fullUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Cache-Control': 'no-cache, no-store, must-revalidate',
-                            'Pragma': 'no-cache',
-                            'Expires': '0'
-                        }
-                    });
-                    
-                    console.log(`Attempting to fetch: ${fullUrl}`);
-                    console.log(`Response status: ${response.status}`);
-                    
-                    if (!response.ok) {
-                        if (urlIndex === urlsToTry.length - 1) {
-                            // Last URL failed
-                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                        } else {
-                            // Try next URL
-                            console.log(`URL ${urlIndex + 1} failed, trying next...`);
-                            continue;
-                        }
-                    }
-                    
-                    const csvText = await response.text();
-                    console.log('Raw response length:', csvText.length);
-                    console.log('First 200 chars:', csvText.substring(0, 200));
-                    
-                    if (!csvText || csvText.trim().length === 0) {
-                        throw new Error('Empty response from Google Sheets');
-                    }
-                    
-                    // Check if response looks like CSV (not HTML error page)
-                    if (csvText.toLowerCase().includes('<html>') || csvText.toLowerCase().includes('<!doctype')) {
-                        throw new Error('Received HTML instead of CSV - check sheet permissions');
-                    }
-                    
-                    console.log('📄 Raw CSV data received:', csvText.substring(0, 300) + '...');
-                    
-                    // Parse CSV data
-                    const rows = csvText.trim().split('\n');
-                    
-                    if (rows.length < 2) {
-                        updateDebugInfo('Connected but no data rows', [], null, 'Only header row found');
-                        // Clear display when no data rows (handles deletions)
-                        updateCheckinDisplay([]);
-                        document.getElementById('connectionStatus').className = 'connection-status connected';
-                        document.getElementById('connectionStatus').innerHTML = '🟢 Connected - No Data';
-                        return;
-                    }
-                    
-                    const headers = parseCSVRow(rows[0]);
-                    console.log('📋 Headers found:', headers);
-                    
-                    const data = [];
-                    
-                    // Process rows in EXACT ORDER they appear in the sheet
-                    for (let i = 1; i < rows.length; i++) {
-                        const values = parseCSVRow(rows[i]);
-                        
-                        // Only process rows with actual name data
-                        if (values.length > 0 && values[0] && values[0].trim() !== '') {
-                            const rowData = {
-                                nricFullName: values[0]?.trim() || '',
-                                emailAddress: values[1]?.trim() || '',
-                                mobileNumber: values[2]?.trim() || '',
-                                ticketNumber: values[3]?.trim() || '',
-                                ticketID: values[4]?.trim() || ''
-                            };
-                            
-                            if (rowData.nricFullName) {
-                                data.push(rowData);
-                                console.log(`Row ${i}: ${rowData.nricFullName} - ${rowData.ticketID}`);
-                            }
-                        }
-                    }
-                    
-                    console.log('✅ Final parsed data (sheet order):', data);
-                    
-                    // Always update display with current data (handles both additions and deletions)
-                    updateCheckinDisplay(data);
-                    updateDebugInfo(`✅ SUCCESS with URL ${urlIndex + 1}`, data, null, `Found ${data.length} check-ins`);
-                    
+                // Add cache busting to prevent stale data
+                const response = await fetch(GOOGLE_SHEET_URL + '&v=' + Date.now());
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                
+                if (!csvText || csvText.trim().length === 0) {
+                    throw new Error('Empty response from Google Sheets');
+                }
+                
+                console.log('📄 Raw CSV data received:', csvText.substring(0, 300) + '...');
+                
+                // Parse CSV data
+                const rows = csvText.trim().split('\n');
+                
+                if (rows.length < 2) {
+                    updateDebugInfo('Connected but no data rows', [], null, 'Only header row found');
+                    updateCheckinDisplay([]);
                     document.getElementById('connectionStatus').className = 'connection-status connected';
-                    document.getElementById('connectionStatus').innerHTML = '🟢 Connected';
+                    document.getElementById('connectionStatus').innerHTML = '🟢 Connected - No Data';
+                    return;
+                }
+                
+                const headers = parseCSVRow(rows[0]);
+                console.log('📋 Headers found:', headers);
+                
+                const data = [];
+                
+                // Process rows in EXACT ORDER they appear in the sheet
+                for (let i = 1; i < rows.length; i++) {
+                    const values = parseCSVRow(rows[i]);
                     
-                    return; // Success, exit the function
-                    
-                } catch (error) {
-                    console.error(`❌ Error with URL ${urlIndex + 1}:`, error);
-                    
-                    if (urlIndex === urlsToTry.length - 1) {
-                        // All URLs failed
-                        updateDebugInfo('❌ All connection attempts failed', [], error.message, 'Check Google Sheets settings');
+                    // Only process rows with actual name data
+                    if (values.length > 0 && values[0] && values[0].trim() !== '') {
+                        const rowData = {
+                            nricFullName: values[0]?.trim() || '',
+                            emailAddress: values[1]?.trim() || '',
+                            mobileNumber: values[2]?.trim() || '',
+                            ticketNumber: values[3]?.trim() || '',
+                            ticketID: values[4]?.trim() || ''
+                        };
                         
-                        document.getElementById('connectionStatus').className = 'connection-status disconnected';
-                        document.getElementById('connectionStatus').innerHTML = '🔴 Connection Error';
-                        
-                        if (isFirstLoad) {
-                            document.getElementById('checkinItems').innerHTML = `
-                                <div class="no-checkins">
-                                    ❌ Unable to connect to Google Sheets<br>
-                                    <small>Error: ${error.message}</small><br>
-                                    <small style="font-size: 0.7em; color: #999;">
-                                        Try: File → Share → Publish to web → Select specific sheet → CSV format
-                                    </small>
-                                </div>
-                            `;
+                        if (rowData.nricFullName) {
+                            data.push(rowData);
+                            console.log(`Row ${i}: ${rowData.nricFullName} - ${rowData.ticketID}`);
                         }
-                    } else {
-                        console.log(`Trying backup URL...`);
                     }
+                }
+                
+                console.log('✅ Final parsed data (sheet order):', data);
+                
+                updateCheckinDisplay(data);
+                updateDebugInfo('✅ Successfully loaded data', data, null, `Found ${data.length} check-ins`);
+                
+                document.getElementById('connectionStatus').className = 'connection-status connected';
+                document.getElementById('connectionStatus').innerHTML = '🟢 Connected';
+                
+            } catch (error) {
+                console.error('❌ Error fetching data:', error);
+                updateDebugInfo('❌ Connection failed', [], error.message, 'Check network/URL');
+                
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                document.getElementById('connectionStatus').innerHTML = '🔴 Error';
+                
+                if (isFirstLoad) {
+                    document.getElementById('checkinItems').innerHTML = `
+                        <div class="no-checkins">
+                            ❌ Unable to connect to Google Sheets<br>
+                            <small>Error: ${error.message}</small>
+                        </div>
+                    `;
                 }
             }
         }
@@ -656,8 +603,8 @@
         // Initial data load
         fetchGoogleSheetData();
         
-        // Update every 3 seconds for real-time updates
-        setInterval(fetchGoogleSheetData, 3000);
+        // Update every 8 seconds
+        setInterval(fetchGoogleSheetData, 8000);
     </script>
 </body>
 </html>
