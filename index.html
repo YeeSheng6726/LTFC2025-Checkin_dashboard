@@ -249,7 +249,6 @@
             color: #FF4500;
         }
 
-        /* Responsive design */
         @media (max-width: 768px) {
             .stats {
                 flex-direction: column;
@@ -280,17 +279,18 @@
     <div class="dashboard">
         <div class="header">
             <div class="logo-container">
-                <!-- Try multiple possible logo file names -->
                 <img class="logo" id="logoImage" alt="JooyMedia Logo" style="display: none;">
             </div>
-            <h1 class="event-title">🎫 Lead The Future Conference 2025</h1>
+            <!-- ❌ Removed 🎫 -->
+            <h1 class="event-title">Lead The Future Conference 2025</h1>
             <div class="stats">
                 <div class="stat-box">
                     <div class="stat-number" id="checkedInCount">0</div>
                     <div class="stat-label">Checked In</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-number">300</div>
+                    <!-- ✅ Changed to 200 -->
+                    <div class="stat-number">200</div>
                     <div class="stat-label">Total Expected</div>
                 </div>
                 <div class="stat-box">
@@ -309,7 +309,6 @@
             </div>
         </div>
 
-        <!-- Debug information -->
         <div class="debug-info" id="debugInfo">
             <strong>🔍 DETAILED DEBUG INFO:</strong><br>
             Status: Initializing...<br>
@@ -325,225 +324,102 @@
         🟡 Loading...
     </div>
 
-        <script>
-        // ⚠️ REPLACE WITH YOUR ACTUAL GOOGLE SHEETS CSV URL
-        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
-        
-        let isFirstLoad = true;
-        let fetchAttempts = 0;
+<script>
+    const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
     
-        // Logo loading stays the same
-        function loadLogo() {
-            const logoImg = document.getElementById('logoImage');
-            const possibleNames = [
-                'JooyMedia_logo.png',
-                'JooyMedia-logo.png', 
-                'jooy-media-logo.png',
-                'logo.png',
-                'JooyMedia.png'
-            ];
-            
-            let attemptIndex = 0;
-            function tryNextLogo() {
-                if (attemptIndex >= possibleNames.length) {
-                    updateDebugInfo('Logo: All attempts failed', [], null, 'Logo loading failed');
-                    return;
-                }
-                const logoUrl = possibleNames[attemptIndex];
-                logoImg.src = logoUrl;
-                logoImg.onload = function() {
-                    logoImg.style.display = 'block';
-                    updateDebugInfo('Logo: ✅ Loaded successfully (' + logoUrl + ')', [], null, 'Logo loaded');
-                };
-                logoImg.onerror = function() {
-                    attemptIndex++;
-                    setTimeout(tryNextLogo, 100);
-                };
-                updateDebugInfo('Logo: Trying ' + logoUrl, [], null, 'Attempting logo load');
+    let isFirstLoad = true;
+    let fetchAttempts = 0;
+    let latestFetchId = 0; // ✅ track latest fetch
+
+    function loadLogo() {
+        const logoImg = document.getElementById('logoImage');
+        const possibleNames = ['JooyMedia_logo.png','JooyMedia-logo.png','jooy-media-logo.png','logo.png','JooyMedia.png'];
+        let attemptIndex = 0;
+        function tryNextLogo() {
+            if (attemptIndex >= possibleNames.length) return;
+            const logoUrl = possibleNames[attemptIndex];
+            logoImg.src = logoUrl;
+            logoImg.onload = () => { logoImg.style.display = 'block'; };
+            logoImg.onerror = () => { attemptIndex++; setTimeout(tryNextLogo, 100); };
+        }
+        tryNextLogo();
+    }
+
+    function updateStats(checkedInCount) {
+        document.getElementById('checkedInCount').textContent = checkedInCount;
+        const percentage = Math.round((checkedInCount / 200) * 100); // ✅ use 200
+        document.getElementById('percentageCount').textContent = `${percentage}%`;
+    }
+
+    function createCheckinItem(person, index, isNewest = false) {
+        const item = document.createElement('div');
+        item.className = `checkin-item ${isNewest ? 'newest' : ''}`;
+        let ticketDisplay = person.ticketID || person.ticketNumber || 'N/A';
+        if (ticketDisplay.startsWith('#')) ticketDisplay = ticketDisplay.substring(1);
+        item.innerHTML = `
+            <div class="person-info">
+                <div class="person-name">${person.nricFullName || 'Unknown Name'}</div>
+                <div class="person-details">Ticket: ${person.ticketNumber || 'N/A'}</div>
+            </div>
+            <div class="ticket-info">
+                <div class="ticket-number">${ticketDisplay}</div>
+                <div class="checkin-time">${index * 3} min ago</div>
+            </div>
+            ${isNewest ? '<span class="new-badge">NEW!</span>' : ''}
+        `;
+        return item;
+    }
+
+    function updateCheckinDisplay(data) {
+        const container = document.getElementById('checkinItems');
+        if (data.length === 0) {
+            container.innerHTML = '<div class="no-checkins">No check-ins yet... Waiting 📊</div>';
+            updateStats(0);
+            return;
+        }
+        const lastFive = data.slice(-5).reverse();
+        container.innerHTML = '';
+        lastFive.forEach((person, i) => {
+            const item = createCheckinItem(person, i, i===0 && !isFirstLoad);
+            container.appendChild(item);
+        });
+        updateStats(data.length);
+        isFirstLoad = false;
+    }
+
+    function parseCSVRow(row) {
+        const result=[], chars=row.split(''); let cur='', inQ=false;
+        chars.forEach(c=>{
+            if(c==='"'){inQ=!inQ;}
+            else if(c===','&&!inQ){result.push(cur.trim()); cur='';}
+            else cur+=c;
+        });
+        result.push(cur.trim());
+        return result;
+    }
+
+    async function fetchGoogleSheetData() {
+        fetchAttempts++;
+        const fetchId = ++latestFetchId; // mark this fetch
+        try {
+            const response = await fetch(GOOGLE_SHEET_URL + '&_=' + Date.now(), {cache:'no-store'});
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            const csv = await response.text();
+            if (fetchId !== latestFetchId) return; // ✅ ignore old fetches
+            const rows = csv.trim().split('\n');
+            if (rows.length<2){ updateCheckinDisplay([]); return; }
+            const data=[];
+            for(let i=1;i<rows.length;i++){
+                const v=parseCSVRow(rows[i]);
+                if(v[0]) data.push({nricFullName:v[0],emailAddress:v[1],mobileNumber:v[2],ticketNumber:v[3],ticketID:v[4]});
             }
-            tryNextLogo();
-        }
-    
-        function updateDebugInfo(status, dataArray = [], error = null, extraInfo = '') {
-            const debugElement = document.getElementById('debugInfo');
-            const now = new Date().toLocaleTimeString();
-            const dataCount = dataArray.length;
-            
-            let sheetOrder = 'Not loaded';
-            if (dataArray.length > 0) {
-                sheetOrder = dataArray.map((person, index) => `${index + 1}. ${person.nricFullName || 'Unknown'}`).join(', ');
-                if (sheetOrder.length > 100) {
-                    sheetOrder = sheetOrder.substring(0, 100) + '...';
-                }
-            }
-            
-            debugElement.innerHTML = `
-                <strong>🔍 DETAILED DEBUG INFO:</strong><br>
-                Status: ${status}<br>
-                Last fetch: ${now}<br>
-                Total rows in sheet: ${dataCount}<br>
-                Displaying last: ${Math.min(5, dataCount)} entries<br>
-                Sheet order: ${sheetOrder}<br>
-                Fetch attempts: ${fetchAttempts}<br>
-                ${extraInfo ? `Extra: ${extraInfo}<br>` : ''}
-                ${error ? `❌ Error: ${error}<br>` : ''}
-                Sheet URL: ${GOOGLE_SHEET_URL.substring(0, 50)}...
-            `;
-        }
-    
-        function formatTimeAgo(index) {
-            const minutesAgo = index * 3;
-            if (minutesAgo < 1) return 'just now';
-            if (minutesAgo < 60) return `${minutesAgo} min ago`;
-            const hours = Math.floor(minutesAgo / 60);
-            if (hours < 24) return `${hours}h ago`;
-            return `${Math.floor(hours / 24)}d ago`;
-        }
-    
-        function updateStats(checkedInCount) {
-            document.getElementById('checkedInCount').textContent = checkedInCount;
-            const percentage = Math.round((checkedInCount / 300) * 100);
-            document.getElementById('percentageCount').textContent = `${percentage}%`;
-        }
-    
-        function createCheckinItem(person, index, isNewest = false) {
-            const item = document.createElement('div');
-            item.className = `checkin-item ${isNewest ? 'newest' : ''}`;
-            
-            let ticketDisplay = person.ticketID || person.ticketNumber || 'N/A';
-            if (ticketDisplay.startsWith('#')) {
-                ticketDisplay = ticketDisplay.substring(1);
-            }
-            
-            item.innerHTML = `
-                <div class="person-info">
-                    <div class="person-name">${person.nricFullName || 'Unknown Name'}</div>
-                    <div class="person-details">Ticket: ${person.ticketNumber || 'N/A'}</div>
-                </div>
-                <div class="ticket-info">
-                    <div class="ticket-number">${ticketDisplay}</div>
-                    <div class="checkin-time">${formatTimeAgo(index)}</div>
-                </div>
-                ${isNewest ? '<span class="new-badge">NEW!</span>' : ''}
-            `;
-            
-            return item;
-        }
-    
-        // ✅ Always rebuild the list fresh
-        function updateCheckinDisplay(data) {
-            const container = document.getElementById('checkinItems');
-            
-            if (data.length === 0) {
-                container.innerHTML = '<div class="no-checkins">No check-ins yet... Waiting for data from Google Sheets 📊</div>';
-                updateStats(0);
-                return;
-            }
-    
-            const lastFiveEntries = data.slice(-5).reverse(); // newest first
-            container.innerHTML = '';
-    
-            lastFiveEntries.forEach((person, index) => {
-                const isNewest = (index === 0 && !isFirstLoad);
-                const item = createCheckinItem(person, index, isNewest);
-                container.appendChild(item);
-            });
-    
-            // Auto-remove NEW badge
-            if (!isFirstLoad) {
-                setTimeout(() => {
-                    const newestItem = container.querySelector('.checkin-item.newest');
-                    if (newestItem) {
-                        newestItem.classList.remove('newest');
-                        const badge = newestItem.querySelector('.new-badge');
-                        if (badge) badge.remove();
-                    }
-                }, 5000);
-            }
-    
-            updateStats(data.length);
-            isFirstLoad = false;
-        }
-    
-        function parseCSVRow(row) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < row.length; i++) {
-                const char = row[i];
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim().replace(/^"|"$/g, ''));
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            result.push(current.trim().replace(/^"|"$/g, ''));
-            return result;
-        }
-    
-        async function fetchGoogleSheetData() {
-            fetchAttempts++;
-            try {
-                updateDebugInfo('🔄 Fetching from Google Sheets...', [], null, 'Making request...');
-                
-                const response = await fetch(GOOGLE_SHEET_URL + '&_=' + Date.now()); // cache buster
-                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                
-                const csvText = await response.text();
-                if (!csvText || csvText.trim().length === 0) throw new Error('Empty response from Google Sheets');
-                
-                const rows = csvText.trim().split('\n');
-                if (rows.length < 2) {
-                    updateCheckinDisplay([]);
-                    updateDebugInfo('Connected but no data rows', [], null, 'Only header row found');
-                    document.getElementById('connectionStatus').className = 'connection-status connected';
-                    document.getElementById('connectionStatus').innerHTML = '🟢 Connected - No Data';
-                    return;
-                }
-                
-                const headers = parseCSVRow(rows[0]);
-                const data = [];
-                for (let i = 1; i < rows.length; i++) {
-                    const values = parseCSVRow(rows[i]);
-                    if (values.length > 0 && values[0]?.trim() !== '') {
-                        data.push({
-                            nricFullName: values[0]?.trim() || '',
-                            emailAddress: values[1]?.trim() || '',
-                            mobileNumber: values[2]?.trim() || '',
-                            ticketNumber: values[3]?.trim() || '',
-                            ticketID: values[4]?.trim() || ''
-                        });
-                    }
-                }
-                
-                updateCheckinDisplay(data);
-                updateDebugInfo('✅ Successfully loaded data', data, null, `Found ${data.length} check-ins`);
-                document.getElementById('connectionStatus').className = 'connection-status connected';
-                document.getElementById('connectionStatus').innerHTML = '🟢 Connected';
-                
-            } catch (error) {
-                console.error('❌ Error fetching data:', error);
-                updateDebugInfo('❌ Connection failed', [], error.message, 'Check network/URL');
-                document.getElementById('connectionStatus').className = 'connection-status disconnected';
-                document.getElementById('connectionStatus').innerHTML = '🔴 Error';
-                if (isFirstLoad) {
-                    document.getElementById('checkinItems').innerHTML = `
-                        <div class="no-checkins">
-                            ❌ Unable to connect to Google Sheets<br>
-                            <small>Error: ${error.message}</small>
-                        </div>
-                    `;
-                }
-            }
-        }
-    
-        loadLogo();
-        fetchGoogleSheetData();
-        setInterval(fetchGoogleSheetData, 8000);
-    </script>
+            updateCheckinDisplay(data);
+        } catch(e){ console.error(e); }
+    }
+
+    loadLogo();
+    fetchGoogleSheetData();
+    setInterval(fetchGoogleSheetData, 8000);
+</script>
 </body>
 </html>
