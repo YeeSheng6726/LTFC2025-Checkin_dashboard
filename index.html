@@ -304,7 +304,7 @@
             <h2 class="list-header">📋 Recent Check-ins (Latest First)</h2>
             <div id="checkinItems">
                 <div class="no-checkins">
-                    Loading check-in data from Google Sheets... 🔄
+                    Loading check-in data from GitHub... 🔄
                 </div>
             </div>
         </div>
@@ -314,9 +314,9 @@
             <strong>🔍 DETAILED DEBUG INFO:</strong><br>
             Status: Initializing...<br>
             Last fetch: Never<br>
-            Total rows in sheet: 0<br>
+            Total checkins: 0<br>
             Displaying last: 0 entries<br>
-            Sheet order: Not loaded<br>
+            Data source: GitHub JSON<br>
             Logo status: Checking...
         </div>
     </div>
@@ -326,8 +326,8 @@
     </div>
 
     <script>
-        // ⚠️ REPLACE WITH YOUR ACTUAL GOOGLE SHEETS CSV URL
-        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
+        // GitHub JSON URL for your checkins data
+        const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/YeeSheng6726/LTFC2025-Checkin_dashboard/main/data/checkins.json';
         
         let isFirstLoad = true;
         let fetchAttempts = 0;
@@ -374,12 +374,12 @@
             const now = new Date().toLocaleTimeString();
             const dataCount = dataArray.length;
             
-            // Show the actual order from sheet
-            let sheetOrder = 'Not loaded';
+            // Show the actual order from data
+            let dataOrder = 'Not loaded';
             if (dataArray.length > 0) {
-                sheetOrder = dataArray.map((person, index) => `${index + 1}. ${person.nricFullName || 'Unknown'}`).join(', ');
-                if (sheetOrder.length > 100) {
-                    sheetOrder = sheetOrder.substring(0, 100) + '...';
+                dataOrder = dataArray.map((person, index) => `${index + 1}. ${person.nricFullName || 'Unknown'}`).join(', ');
+                if (dataOrder.length > 100) {
+                    dataOrder = dataOrder.substring(0, 100) + '...';
                 }
             }
             
@@ -387,33 +387,42 @@
                 <strong>🔍 DETAILED DEBUG INFO:</strong><br>
                 Status: ${status}<br>
                 Last fetch: ${now}<br>
-                Total rows in sheet: ${dataCount}<br>
+                Total checkins: ${dataCount}<br>
                 Displaying last: ${Math.min(5, dataCount)} entries<br>
-                Sheet order: ${sheetOrder}<br>
+                Data order: ${dataOrder}<br>
                 Fetch attempts: ${fetchAttempts}<br>
                 ${extraInfo ? `Extra: ${extraInfo}<br>` : ''}
                 ${error ? `❌ Error: ${error}<br>` : ''}
-                Sheet URL: ${GOOGLE_SHEET_URL.substring(0, 50)}...
+                Data source: GitHub JSON
             `;
         }
 
-        function formatTimeAgo(index) {
-            // Simple time calculation based on position
-            const minutesAgo = index * 3; // Each position = 3 minutes older
-            if (minutesAgo < 1) return 'just now';
-            if (minutesAgo < 60) return `${minutesAgo} min ago`;
-            const hours = Math.floor(minutesAgo / 60);
-            if (hours < 24) return `${hours}h ago`;
-            return `${Math.floor(hours / 24)}d ago`;
+        function formatTimeAgo(checkinTime) {
+            try {
+                const checkinDate = new Date(checkinTime);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - checkinDate) / (1000 * 60));
+                
+                if (diffMinutes < 1) return 'just now';
+                if (diffMinutes < 60) return `${diffMinutes} min ago`;
+                
+                const diffHours = Math.floor(diffMinutes / 60);
+                if (diffHours < 24) return `${diffHours}h ago`;
+                
+                const diffDays = Math.floor(diffHours / 24);
+                return `${diffDays}d ago`;
+            } catch (error) {
+                return checkinTime || 'Unknown time';
+            }
         }
 
         function updateStats(checkedInCount) {
             document.getElementById('checkedInCount').textContent = checkedInCount;
-            const percentage = Math.round((checkedInCount / 300) * 100);
+            const percentage = Math.round((checkedInCount / 200) * 100);
             document.getElementById('percentageCount').textContent = `${percentage}%`;
         }
 
-        function createCheckinItem(person, index, isNewest = false) {
+        function createCheckinItem(person, isNewest = false) {
             const item = document.createElement('div');
             item.className = `checkin-item ${isNewest ? 'newest' : ''}`;
             
@@ -430,7 +439,7 @@
                 </div>
                 <div class="ticket-info">
                     <div class="ticket-number">${ticketDisplay}</div>
-                    <div class="checkin-time">${formatTimeAgo(index)}</div>
+                    <div class="checkin-time">${formatTimeAgo(person.checkinTime)}</div>
                 </div>
                 ${isNewest ? '<span class="new-badge">NEW!</span>' : ''}
             `;
@@ -442,21 +451,21 @@
             const container = document.getElementById('checkinItems');
             
             if (data.length === 0) {
-                container.innerHTML = '<div class="no-checkins">No check-ins yet... Waiting for data from Google Sheets 📊</div>';
+                container.innerHTML = '<div class="no-checkins">No check-ins yet... Waiting for data from GitHub 📊</div>';
                 updateStats(0);
                 return;
             }
 
             console.log('🔍 DEBUGGING DATA ORDER:');
-            console.log('Original data from sheet (in order):', data);
+            console.log('Original data from GitHub:', data);
             
-            // Take EXACTLY the last 5 entries from the Google Sheet
+            // Take EXACTLY the last 5 entries from the data
             // These represent the most recent check-ins
             const lastFiveEntries = data.slice(-5);
             
-            console.log('Last 5 entries from sheet:', lastFiveEntries);
+            console.log('Last 5 entries:', lastFiveEntries);
             
-            // Reverse the array so the NEWEST (last row from sheet) appears FIRST on dashboard
+            // Reverse the array so the NEWEST appears FIRST on dashboard
             const displayOrder = [...lastFiveEntries].reverse();
             
             console.log('Display order (reversed for newest first):', displayOrder);
@@ -471,7 +480,7 @@
             // Add items in display order (newest first)
             displayOrder.forEach((person, index) => {
                 const isNewest = hasNewEntry && index === 0 && !isFirstLoad;
-                const item = createCheckinItem(person, index, isNewest);
+                const item = createCheckinItem(person, isNewest);
                 container.appendChild(item);
             });
             
@@ -491,90 +500,33 @@
             isFirstLoad = false;
         }
 
-        function parseCSVRow(row) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < row.length; i++) {
-                const char = row[i];
-                
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim().replace(/^"|"$/g, ''));
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            result.push(current.trim().replace(/^"|"$/g, ''));
-            
-            return result;
-        }
-
-        async function fetchGoogleSheetData() {
+        async function fetchGitHubData() {
             fetchAttempts++;
             
             try {
-                updateDebugInfo('🔄 Fetching from Google Sheets...', [], null, 'Making request...');
+                updateDebugInfo('🔄 Fetching from GitHub...', [], null, 'Making request...');
                 
                 // Add cache busting to prevent stale data
-                const response = await fetch(GOOGLE_SHEET_URL + '&v=' + Date.now());
+                const response = await fetch(GITHUB_JSON_URL + '?v=' + Date.now());
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
-                const csvText = await response.text();
+                const jsonData = await response.json();
                 
-                if (!csvText || csvText.trim().length === 0) {
-                    throw new Error('Empty response from Google Sheets');
+                if (!jsonData || !jsonData.checkins) {
+                    throw new Error('Invalid JSON structure from GitHub');
                 }
                 
-                console.log('📄 Raw CSV data received:', csvText.substring(0, 300) + '...');
+                console.log('📄 Raw JSON data received:', jsonData);
                 
-                // Parse CSV data
-                const rows = csvText.trim().split('\n');
+                const checkins = jsonData.checkins || [];
                 
-                if (rows.length < 2) {
-                    updateDebugInfo('Connected but no data rows', [], null, 'Only header row found');
-                    updateCheckinDisplay([]);
-                    document.getElementById('connectionStatus').className = 'connection-status connected';
-                    document.getElementById('connectionStatus').innerHTML = '🟢 Connected - No Data';
-                    return;
-                }
+                console.log('✅ Final parsed data:', checkins);
                 
-                const headers = parseCSVRow(rows[0]);
-                console.log('📋 Headers found:', headers);
-                
-                const data = [];
-                
-                // Process rows in EXACT ORDER they appear in the sheet
-                for (let i = 1; i < rows.length; i++) {
-                    const values = parseCSVRow(rows[i]);
-                    
-                    // Only process rows with actual name data
-                    if (values.length > 0 && values[0] && values[0].trim() !== '') {
-                        const rowData = {
-                            nricFullName: values[0]?.trim() || '',
-                            emailAddress: values[1]?.trim() || '',
-                            mobileNumber: values[2]?.trim() || '',
-                            ticketNumber: values[3]?.trim() || '',
-                            ticketID: values[4]?.trim() || ''
-                        };
-                        
-                        if (rowData.nricFullName) {
-                            data.push(rowData);
-                            console.log(`Row ${i}: ${rowData.nricFullName} - ${rowData.ticketID}`);
-                        }
-                    }
-                }
-                
-                console.log('✅ Final parsed data (sheet order):', data);
-                
-                updateCheckinDisplay(data);
-                updateDebugInfo('✅ Successfully loaded data', data, null, `Found ${data.length} check-ins`);
+                updateCheckinDisplay(checkins);
+                updateDebugInfo('✅ Successfully loaded data', checkins, null, `Found ${checkins.length} check-ins, last updated: ${jsonData.lastUpdated}`);
                 
                 document.getElementById('connectionStatus').className = 'connection-status connected';
                 document.getElementById('connectionStatus').innerHTML = '🟢 Connected';
@@ -589,7 +541,7 @@
                 if (isFirstLoad) {
                     document.getElementById('checkinItems').innerHTML = `
                         <div class="no-checkins">
-                            ❌ Unable to connect to Google Sheets<br>
+                            ❌ Unable to connect to GitHub<br>
                             <small>Error: ${error.message}</small>
                         </div>
                     `;
@@ -601,10 +553,10 @@
         loadLogo();
         
         // Initial data load
-        fetchGoogleSheetData();
+        fetchGitHubData();
         
-        // Update every 8 seconds
-        setInterval(fetchGoogleSheetData, 5000);
+        // Update every 5 seconds for real-time updates
+        setInterval(fetchGitHubData, 5000);
     </script>
 </body>
 </html>
