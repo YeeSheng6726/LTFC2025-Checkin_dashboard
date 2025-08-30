@@ -41,11 +41,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100px;
         }
 
         .logo {
-            max-height: 80px;
+            max-height: 100px;
+            max-width: 300px;
             width: auto;
+            height: auto;
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
         }
 
@@ -258,7 +261,7 @@
             }
             
             .logo {
-                max-height: 60px;
+                max-height: 80px;
             }
             
             .checkin-item {
@@ -277,45 +280,8 @@
     <div class="dashboard">
         <div class="header">
             <div class="logo-container">
-                <svg class="logo" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
-                    <!-- JooyMedia Logo Recreation -->
-                    <!-- J -->
-                    <path d="M 60 60 L 60 140 Q 60 160 40 160 Q 20 160 20 140 L 20 120 L 40 120 L 40 140 Q 40 140 40 140 L 50 140 Q 50 140 50 120 L 50 60 L 70 60 Z" fill="url(#gradient1)"/>
-                    
-                    <!-- First Hexagon (O) -->
-                    <polygon points="120,80 140,60 180,60 200,80 180,140 140,140" fill="url(#gradient2)" stroke="none"/>
-                    <polygon points="135,80 150,70 170,70 185,80 170,130 150,130" fill="white"/>
-                    
-                    <!-- Second Hexagon (O) -->
-                    <polygon points="220,80 240,60 280,60 300,80 280,140 240,140" fill="url(#gradient3)" stroke="none"/>
-                    <polygon points="235,80 250,70 270,70 285,80 270,130 250,130" fill="white"/>
-                    
-                    <!-- Y -->
-                    <path d="M 320 60 L 340 60 L 355 90 L 370 60 L 390 60 L 365 110 L 365 140 L 345 140 L 345 110 Z" fill="url(#gradient4)"/>
-                    
-                    <!-- MEDIA text -->
-                    <text x="200" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">MEDIA</text>
-                    
-                    <!-- Gradients -->
-                    <defs>
-                        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#FF4500;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#FF6600;stop-opacity:1" />
-                        </linearGradient>
-                        <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#FF6600;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#FF8C00;stop-opacity:1" />
-                        </linearGradient>
-                        <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#FF8C00;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
-                        </linearGradient>
-                        <linearGradient id="gradient4" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#FFA500;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#FFB347;stop-opacity:1" />
-                        </linearGradient>
-                    </defs>
-                </svg>
+                <!-- Try multiple possible logo file names -->
+                <img class="logo" id="logoImage" alt="JooyMedia Logo" style="display: none;">
             </div>
             <h1 class="event-title">🎫 Lead The Future Conference 2025</h1>
             <div class="stats">
@@ -345,10 +311,13 @@
 
         <!-- Debug information -->
         <div class="debug-info" id="debugInfo">
-            <strong>Debug Info:</strong><br>
+            <strong>🔍 DETAILED DEBUG INFO:</strong><br>
             Status: Initializing...<br>
             Last fetch: Never<br>
-            Data rows: 0
+            Total rows in sheet: 0<br>
+            Displaying last: 0 entries<br>
+            Sheet order: Not loaded<br>
+            Logo status: Checking...
         </div>
     </div>
 
@@ -358,39 +327,84 @@
 
     <script>
         // ⚠️ REPLACE WITH YOUR ACTUAL GOOGLE SHEETS CSV URL
-        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
+        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
         
-        let previousData = [];
         let isFirstLoad = true;
         let fetchAttempts = 0;
-        let checkinTimestamps = new Map(); // Store when each person first checked in
-        let seenParticipants = new Set(); // Track which participants we've seen before
+        let lastDataCount = 0;
 
-        function updateDebugInfo(status, dataCount = 0, error = null) {
+        // Logo loading function with multiple attempts
+        function loadLogo() {
+            const logoImg = document.getElementById('logoImage');
+            const possibleNames = [
+                'JooyMedia_logo.png',
+                'JooyMedia-logo.png', 
+                'jooy-media-logo.png',
+                'logo.png',
+                'JooyMedia.png'
+            ];
+            
+            let attemptIndex = 0;
+            
+            function tryNextLogo() {
+                if (attemptIndex >= possibleNames.length) {
+                    updateDebugInfo('Logo: All attempts failed', [], null, 'Logo loading failed');
+                    return;
+                }
+                
+                const logoUrl = possibleNames[attemptIndex];
+                logoImg.src = logoUrl;
+                logoImg.onload = function() {
+                    logoImg.style.display = 'block';
+                    updateDebugInfo('Logo: ✅ Loaded successfully (' + logoUrl + ')', [], null, 'Logo loaded');
+                };
+                logoImg.onerror = function() {
+                    attemptIndex++;
+                    setTimeout(tryNextLogo, 100);
+                };
+                
+                updateDebugInfo('Logo: Trying ' + logoUrl, [], null, 'Attempting logo load');
+            }
+            
+            tryNextLogo();
+        }
+
+        function updateDebugInfo(status, dataArray = [], error = null, extraInfo = '') {
             const debugElement = document.getElementById('debugInfo');
             const now = new Date().toLocaleTimeString();
+            const dataCount = dataArray.length;
+            
+            // Show the actual order from sheet
+            let sheetOrder = 'Not loaded';
+            if (dataArray.length > 0) {
+                sheetOrder = dataArray.map((person, index) => `${index + 1}. ${person.nricFullName || 'Unknown'}`).join(', ');
+                if (sheetOrder.length > 100) {
+                    sheetOrder = sheetOrder.substring(0, 100) + '...';
+                }
+            }
+            
             debugElement.innerHTML = `
-                <strong>Debug Info:</strong><br>
+                <strong>🔍 DETAILED DEBUG INFO:</strong><br>
                 Status: ${status}<br>
                 Last fetch: ${now}<br>
-                Data rows: ${dataCount}<br>
+                Total rows in sheet: ${dataCount}<br>
+                Displaying last: ${Math.min(5, dataCount)} entries<br>
+                Sheet order: ${sheetOrder}<br>
                 Fetch attempts: ${fetchAttempts}<br>
-                ${error ? `Error: ${error}<br>` : ''}
+                ${extraInfo ? `Extra: ${extraInfo}<br>` : ''}
+                ${error ? `❌ Error: ${error}<br>` : ''}
                 Sheet URL: ${GOOGLE_SHEET_URL.substring(0, 50)}...
             `;
         }
 
-        function formatTimeAgo(timestamp) {
-            const now = new Date();
-            const diff = now - timestamp;
-            const minutes = Math.floor(diff / 60000); // Convert to minutes
-            const hours = Math.floor(minutes / 60);
-            const days = Math.floor(hours / 24);
-
-            if (minutes < 1) return 'just now';
-            if (minutes < 60) return `${minutes} min ago`;
-            if (hours < 24) return `${hours}h ${minutes % 60}m ago`;
-            return `${days}d ${hours % 24}h ago`;
+        function formatTimeAgo(index) {
+            // Simple time calculation based on position
+            const minutesAgo = index * 3; // Each position = 3 minutes older
+            if (minutesAgo < 1) return 'just now';
+            if (minutesAgo < 60) return `${minutesAgo} min ago`;
+            const hours = Math.floor(minutesAgo / 60);
+            if (hours < 24) return `${hours}h ago`;
+            return `${Math.floor(hours / 24)}d ago`;
         }
 
         function updateStats(checkedInCount) {
@@ -399,20 +413,15 @@
             document.getElementById('percentageCount').textContent = `${percentage}%`;
         }
 
-        function createUniqueKey(person) {
-            // Create a unique identifier for each person
-            return `${person.nricFullName}_${person.ticketID || person.ticketNumber}`;
-        }
-
-        function createCheckinItem(person, isNewest = false) {
+        function createCheckinItem(person, index, isNewest = false) {
             const item = document.createElement('div');
             item.className = `checkin-item ${isNewest ? 'newest' : ''}`;
             
-            const uniqueKey = createUniqueKey(person);
-            const timestamp = checkinTimestamps.get(uniqueKey) || new Date();
-            
-            // Remove "ID: " part from the display and "#" from ticket number
-            const ticketDisplay = person.ticketID || person.ticketNumber || 'N/A';
+            // Clean up ticket display - remove # if present
+            let ticketDisplay = person.ticketID || person.ticketNumber || 'N/A';
+            if (ticketDisplay.startsWith('#')) {
+                ticketDisplay = ticketDisplay.substring(1);
+            }
             
             item.innerHTML = `
                 <div class="person-info">
@@ -421,7 +430,7 @@
                 </div>
                 <div class="ticket-info">
                     <div class="ticket-number">${ticketDisplay}</div>
-                    <div class="checkin-time">${formatTimeAgo(timestamp)}</div>
+                    <div class="checkin-time">${formatTimeAgo(index)}</div>
                 </div>
                 ${isNewest ? '<span class="new-badge">NEW!</span>' : ''}
             `;
@@ -438,51 +447,36 @@
                 return;
             }
 
-            // Track new participants and assign timestamps
-            const currentParticipants = new Set();
-            let hasNewEntry = false;
-            let newestParticipantKey = null;
-
-            data.forEach(person => {
-                const uniqueKey = createUniqueKey(person);
-                currentParticipants.add(uniqueKey);
-
-                if (!checkinTimestamps.has(uniqueKey)) {
-                    // This is a truly new participant - assign current timestamp
-                    checkinTimestamps.set(uniqueKey, new Date());
-                    
-                    if (!isFirstLoad) {
-                        hasNewEntry = true;
-                        newestParticipantKey = uniqueKey;
-                    }
-                }
-            });
-
-            // Sort data by check-in timestamp (newest first)
-            // The most recently added entries will have the most recent timestamps
-            const sortedData = data.slice().sort((a, b) => {
-                const keyA = createUniqueKey(a);
-                const keyB = createUniqueKey(b);
-                const timeA = checkinTimestamps.get(keyA) || new Date(0);
-                const timeB = checkinTimestamps.get(keyB) || new Date(0);
-                return timeB - timeA; // Newest first
-            });
-
-            const recentCheckins = sortedData.slice(0, 5);
+            console.log('🔍 DEBUGGING DATA ORDER:');
+            console.log('Original data from sheet (in order):', data);
+            
+            // Take EXACTLY the last 5 entries from the Google Sheet
+            // These represent the most recent check-ins
+            const lastFiveEntries = data.slice(-5);
+            
+            console.log('Last 5 entries from sheet:', lastFiveEntries);
+            
+            // Reverse the array so the NEWEST (last row from sheet) appears FIRST on dashboard
+            const displayOrder = [...lastFiveEntries].reverse();
+            
+            console.log('Display order (reversed for newest first):', displayOrder);
+            
+            // Check if we have new data
+            const hasNewEntry = data.length > lastDataCount;
+            lastDataCount = data.length;
             
             // Clear container
             container.innerHTML = '';
             
-            // Add items (newest to oldest by timestamp)
-            recentCheckins.forEach((person) => {
-                const uniqueKey = createUniqueKey(person);
-                const isNewest = hasNewEntry && uniqueKey === newestParticipantKey;
-                const item = createCheckinItem(person, isNewest);
+            // Add items in display order (newest first)
+            displayOrder.forEach((person, index) => {
+                const isNewest = hasNewEntry && index === 0 && !isFirstLoad;
+                const item = createCheckinItem(person, index, isNewest);
                 container.appendChild(item);
             });
             
-            // Remove NEW badge and animation after 5 seconds
-            if (hasNewEntry) {
+            // Remove NEW badge after 5 seconds
+            if (hasNewEntry && !isFirstLoad) {
                 setTimeout(() => {
                     const newestItem = container.querySelector('.checkin-item.newest');
                     if (newestItem) {
@@ -494,7 +488,6 @@
             }
             
             updateStats(data.length);
-            previousData = [...data];
             isFirstLoad = false;
         }
 
@@ -509,13 +502,13 @@
                 if (char === '"') {
                     inQuotes = !inQuotes;
                 } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim());
+                    result.push(current.trim().replace(/^"|"$/g, ''));
                     current = '';
                 } else {
                     current += char;
                 }
             }
-            result.push(current.trim());
+            result.push(current.trim().replace(/^"|"$/g, ''));
             
             return result;
         }
@@ -524,9 +517,10 @@
             fetchAttempts++;
             
             try {
-                updateDebugInfo('Fetching data from Google Sheets...', previousData.length);
+                updateDebugInfo('🔄 Fetching from Google Sheets...', [], null, 'Making request...');
                 
-                const response = await fetch(GOOGLE_SHEET_URL);
+                // Add cache busting to prevent stale data
+                const response = await fetch(GOOGLE_SHEET_URL + '&v=' + Date.now());
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -538,11 +532,13 @@
                     throw new Error('Empty response from Google Sheets');
                 }
                 
+                console.log('📄 Raw CSV data received:', csvText.substring(0, 300) + '...');
+                
                 // Parse CSV data
                 const rows = csvText.trim().split('\n');
                 
                 if (rows.length < 2) {
-                    updateDebugInfo('Google Sheets connected but no data rows found', 0);
+                    updateDebugInfo('Connected but no data rows', [], null, 'Only header row found');
                     updateCheckinDisplay([]);
                     document.getElementById('connectionStatus').className = 'connection-status connected';
                     document.getElementById('connectionStatus').innerHTML = '🟢 Connected - No Data';
@@ -550,84 +546,65 @@
                 }
                 
                 const headers = parseCSVRow(rows[0]);
-                console.log('CSV Headers:', headers);
+                console.log('📋 Headers found:', headers);
                 
                 const data = [];
                 
+                // Process rows in EXACT ORDER they appear in the sheet
                 for (let i = 1; i < rows.length; i++) {
                     const values = parseCSVRow(rows[i]);
                     
-                    if (values.length >= headers.length && values[0]) {
+                    // Only process rows with actual name data
+                    if (values.length > 0 && values[0] && values[0].trim() !== '') {
                         const rowData = {
-                            nricFullName: values[0]?.replace(/"/g, '').trim(),
-                            emailAddress: values[1]?.replace(/"/g, '').trim(),
-                            mobileNumber: values[2]?.replace(/"/g, '').trim(),
-                            ticketNumber: values[3]?.replace(/"/g, '').trim(),
-                            ticketID: values[4]?.replace(/"/g, '').trim()
+                            nricFullName: values[0]?.trim() || '',
+                            emailAddress: values[1]?.trim() || '',
+                            mobileNumber: values[2]?.trim() || '',
+                            ticketNumber: values[3]?.trim() || '',
+                            ticketID: values[4]?.trim() || ''
                         };
                         
                         if (rowData.nricFullName) {
                             data.push(rowData);
+                            console.log(`Row ${i}: ${rowData.nricFullName} - ${rowData.ticketID}`);
                         }
                     }
                 }
                 
-                console.log('Parsed data from Google Sheets:', data);
+                console.log('✅ Final parsed data (sheet order):', data);
                 
                 updateCheckinDisplay(data);
-                updateDebugInfo('✅ Successfully connected to Google Sheets', data.length);
+                updateDebugInfo('✅ Successfully loaded data', data, null, `Found ${data.length} check-ins`);
                 
                 document.getElementById('connectionStatus').className = 'connection-status connected';
                 document.getElementById('connectionStatus').innerHTML = '🟢 Connected';
                 
             } catch (error) {
-                console.error('Error fetching Google Sheets data:', error);
-                updateDebugInfo('❌ Error connecting to Google Sheets', previousData.length, error.message);
+                console.error('❌ Error fetching data:', error);
+                updateDebugInfo('❌ Connection failed', [], error.message, 'Check network/URL');
                 
                 document.getElementById('connectionStatus').className = 'connection-status disconnected';
-                document.getElementById('connectionStatus').innerHTML = '🔴 Connection Error';
+                document.getElementById('connectionStatus').innerHTML = '🔴 Error';
                 
-                // Show error message in the checkin area if this is the first load
-                if (isFirstLoad || previousData.length === 0) {
+                if (isFirstLoad) {
                     document.getElementById('checkinItems').innerHTML = `
                         <div class="no-checkins">
                             ❌ Unable to connect to Google Sheets<br>
-                            <small>Please check your Google Sheets URL and make sure it's published as CSV</small>
+                            <small>Error: ${error.message}</small>
                         </div>
                     `;
                 }
-                // If we have previous data, keep showing it instead of clearing it
             }
         }
 
-        // Update every 5 seconds
-        setInterval(fetchGoogleSheetData, 5000);
+        // Load logo when page loads
+        loadLogo();
         
-        // Initial load
+        // Initial data load
         fetchGoogleSheetData();
         
-        // Update timestamps every 30 seconds
-        setInterval(() => {
-            const timeElements = document.querySelectorAll('.checkin-time');
-            timeElements.forEach((element) => {
-                const checkinItem = element.closest('.checkin-item');
-                if (checkinItem) {
-                    const nameElement = checkinItem.querySelector('.person-name');
-                    const ticketElement = checkinItem.querySelector('.ticket-number');
-                    
-                    if (nameElement && ticketElement) {
-                        const name = nameElement.textContent;
-                        const ticket = ticketElement.textContent;
-                        const uniqueKey = `${name}_${ticket}`;
-                        const timestamp = checkinTimestamps.get(uniqueKey);
-                        
-                        if (timestamp) {
-                            element.textContent = formatTimeAgo(timestamp);
-                        }
-                    }
-                }
-            });
-        }, 30000);
+        // Update every 8 seconds
+        setInterval(fetchGoogleSheetData, 8000);
     </script>
 </body>
 </html>
