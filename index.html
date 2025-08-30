@@ -283,14 +283,14 @@
                 <!-- Try multiple possible logo file names -->
                 <img class="logo" id="logoImage" alt="JooyMedia Logo" style="display: none;">
             </div>
-            <h1 class="event-title">Lead The Future Conference 2025</h1>
+            <h1 class="event-title">🎫 Lead The Future Conference 2025</h1>
             <div class="stats">
                 <div class="stat-box">
                     <div class="stat-number" id="checkedInCount">0</div>
                     <div class="stat-label">Checked In</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-number">200</div>
+                    <div class="stat-number">300</div>
                     <div class="stat-label">Total Expected</div>
                 </div>
                 <div class="stat-box">
@@ -327,7 +327,7 @@
 
     <script>
         // ⚠️ REPLACE WITH YOUR ACTUAL GOOGLE SHEETS CSV URL
-        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
+        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSeVXeuJPrgKWYTGJNWOFF0jR0nz4OtEr_7Tqf40P9zlaUUUyicUqKm90AT8WA8GzT2uxV5IDrCJMVjO/pub?output=csv';
         
         let isFirstLoad = true;
         let fetchAttempts = 0;
@@ -444,6 +444,8 @@
             if (data.length === 0) {
                 container.innerHTML = '<div class="no-checkins">No check-ins yet... Waiting for data from Google Sheets 📊</div>';
                 updateStats(0);
+                // Reset data tracking when no data
+                lastDataCount = 0;
                 return;
             }
 
@@ -461,11 +463,10 @@
             
             console.log('Display order (reversed for newest first):', displayOrder);
             
-            // Check if we have new data
+            // Check if we have new data (but handle deletions properly)
             const hasNewEntry = data.length > lastDataCount;
-            lastDataCount = data.length;
             
-            // Clear container
+            // ALWAYS clear container to handle deletions properly
             container.innerHTML = '';
             
             // Add items in display order (newest first)
@@ -488,6 +489,7 @@
             }
             
             updateStats(data.length);
+            lastDataCount = data.length;
             isFirstLoad = false;
         }
 
@@ -519,8 +521,16 @@
             try {
                 updateDebugInfo('🔄 Fetching from Google Sheets...', [], null, 'Making request...');
                 
-                // Add cache busting to prevent stale data
-                const response = await fetch(GOOGLE_SHEET_URL + '&v=' + Date.now());
+                // STRONG cache busting to prevent stale data
+                const cacheBuster = Date.now() + Math.random().toString(36).substr(2, 9);
+                const response = await fetch(GOOGLE_SHEET_URL + '&v=' + cacheBuster + '&cb=' + cacheBuster, {
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -539,6 +549,7 @@
                 
                 if (rows.length < 2) {
                     updateDebugInfo('Connected but no data rows', [], null, 'Only header row found');
+                    // Clear display when no data rows (handles deletions)
                     updateCheckinDisplay([]);
                     document.getElementById('connectionStatus').className = 'connection-status connected';
                     document.getElementById('connectionStatus').innerHTML = '🟢 Connected - No Data';
@@ -573,6 +584,7 @@
                 
                 console.log('✅ Final parsed data (sheet order):', data);
                 
+                // Always update display with current data (handles both additions and deletions)
                 updateCheckinDisplay(data);
                 updateDebugInfo('✅ Successfully loaded data', data, null, `Found ${data.length} check-ins`);
                 
@@ -603,8 +615,8 @@
         // Initial data load
         fetchGoogleSheetData();
         
-        // Update every 8 seconds
-        setInterval(fetchGoogleSheetData, 8000);
+        // Update every 3 seconds for real-time updates
+        setInterval(fetchGoogleSheetData, 3000);
     </script>
 </body>
 </html>
