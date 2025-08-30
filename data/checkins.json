@@ -1,5 +1,14 @@
 {
-  "lastUpdated": "2025-08-30T00:00:00Z",
-  "totalCheckins": 0,
-  "checkins": []
+  "lastUpdated": "2025-08-30T15:09:25.114Z",
+  "totalCheckins": 1,
+  "checkins": [
+    {
+      "nricFullName": "TEST TEST 01",
+      "emailAddress": "yeesheng.ai@gmail.com",
+      "mobileNumber": "11111111",
+      "ticketNumber": "JM-25092025-0001-P79KLV3S",
+      "ticketID": "MEYAKKV2-P79K",
+      "checkinTime": "2025-08-30 15:09:21"
+    }
+  ]
 }
