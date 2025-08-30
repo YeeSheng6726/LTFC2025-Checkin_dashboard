@@ -281,6 +281,7 @@
             <div class="logo-container">
                 <img class="logo" id="logoImage" alt="JooyMedia Logo" style="display: none;">
             </div>
+            <!-- ❌ Removed 🎫 -->
             <h1 class="event-title">Lead The Future Conference 2025</h1>
             <div class="stats">
                 <div class="stat-box">
@@ -288,6 +289,7 @@
                     <div class="stat-label">Checked In</div>
                 </div>
                 <div class="stat-box">
+                    <!-- ✅ Changed to 200 -->
                     <div class="stat-number">200</div>
                     <div class="stat-label">Total Expected</div>
                 </div>
@@ -327,8 +329,7 @@
     
     let isFirstLoad = true;
     let fetchAttempts = 0;
-    let latestFetchId = 0; 
-    let lastLatestTicket = null; // ✅ track last seen latest check-in
+    let latestFetchId = 0; // ✅ track latest fetch
 
     function loadLogo() {
         const logoImg = document.getElementById('logoImage');
@@ -346,7 +347,7 @@
 
     function updateStats(checkedInCount) {
         document.getElementById('checkedInCount').textContent = checkedInCount;
-        const percentage = Math.round((checkedInCount / 200) * 100); 
+        const percentage = Math.round((checkedInCount / 200) * 100); // ✅ use 200
         document.getElementById('percentageCount').textContent = `${percentage}%`;
     }
 
@@ -371,35 +372,18 @@
 
     function updateCheckinDisplay(data) {
         const container = document.getElementById('checkinItems');
-
         if (data.length === 0) {
             container.innerHTML = '<div class="no-checkins">No check-ins yet... Waiting 📊</div>';
             updateStats(0);
             return;
         }
-
-        // Always take the last 5 rows, newest first
         const lastFive = data.slice(-5).reverse();
-        const latestTicket = lastFive[0].ticketNumber || lastFive[0].ticketID || "UNKNOWN";
-
-        // ✅ Prevent rollback: ignore if this update is older than what we already showed
-        if (lastLatestTicket && latestTicket !== lastLatestTicket && data.length < document.querySelectorAll('.checkin-item').length) {
-            console.log("⚠️ Ignoring older fetch result");
-            return;
-        }
-
-        // Render items
         container.innerHTML = '';
         lastFive.forEach((person, i) => {
-            const isNewest = (i === 0 && latestTicket !== lastLatestTicket);
-            const item = createCheckinItem(person, i, isNewest);
+            const item = createCheckinItem(person, i, i===0 && !isFirstLoad);
             container.appendChild(item);
         });
-
         updateStats(data.length);
-
-        // ✅ Remember the latest ticket so next update knows what's new
-        lastLatestTicket = latestTicket;
         isFirstLoad = false;
     }
 
@@ -416,12 +400,12 @@
 
     async function fetchGoogleSheetData() {
         fetchAttempts++;
-        const fetchId = ++latestFetchId; 
+        const fetchId = ++latestFetchId; // mark this fetch
         try {
             const response = await fetch(GOOGLE_SHEET_URL + '&_=' + Date.now(), {cache:'no-store'});
             if (!response.ok) throw new Error('HTTP ' + response.status);
             const csv = await response.text();
-            if (fetchId !== latestFetchId) return; 
+            if (fetchId !== latestFetchId) return; // ✅ ignore old fetches
             const rows = csv.trim().split('\n');
             if (rows.length<2){ updateCheckinDisplay([]); return; }
             const data=[];
