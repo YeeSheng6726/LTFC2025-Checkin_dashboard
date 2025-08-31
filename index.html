@@ -316,7 +316,7 @@
             Last fetch: Never<br>
             Total checkins: 0<br>
             Displaying last: 0 entries<br>
-            Data source: GitHub JSON<br>
+            Data source: GitHub Raw File<br>
             Logo status: Checking...
         </div>
     </div>
@@ -326,24 +326,12 @@
     </div>
 
     <script>
-        // GitHub JSON URL for your checkins data
+        // GitHub RAW JSON URL for your checkins data (direct file access)
         const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/YeeSheng6726/LTFC2025-Checkin_dashboard/main/data/checkins.json';
         
         let isFirstLoad = true;
         let fetchAttempts = 0;
         let lastDataCount = 0;
-
-        // FIXED: Browser-compatible base64 decoding function
-        function base64Decode(str) {
-            try {
-                // Use the browser's built-in atob function instead of Buffer
-                const decoded = atob(str);
-                return decoded;
-            } catch (error) {
-                console.error('Error decoding base64:', error);
-                return null;
-            }
-        }
 
         // Logo loading function with multiple attempts
         function loadLogo() {
@@ -405,7 +393,7 @@
                 Fetch attempts: ${fetchAttempts}<br>
                 ${extraInfo ? `Extra: ${extraInfo}<br>` : ''}
                 ${error ? `❌ Error: ${error}<br>` : ''}
-                Data source: GitHub JSON
+                Data source: GitHub Raw File
             `;
         }
 
@@ -516,29 +504,17 @@
             fetchAttempts++;
             
             try {
-                updateDebugInfo('🔄 Fetching from GitHub API...', [], null, 'Making request...');
+                updateDebugInfo('🔄 Fetching from GitHub Raw File...', [], null, 'Making request...');
                 
                 // Add cache busting to prevent stale data
-                const response = await fetch(GITHUB_JSON_URL + '?v=' + Date.now(), {
-                    headers: {
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
+                const response = await fetch(GITHUB_JSON_URL + '?v=' + Date.now());
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
-                const apiResponse = await response.json();
-                
-                // FIXED: Use browser-compatible base64 decoding instead of Buffer
-                const decodedContent = base64Decode(apiResponse.content.replace(/\n/g, ''));
-                
-                if (!decodedContent) {
-                    throw new Error('Failed to decode base64 content from GitHub');
-                }
-                
-                const jsonData = JSON.parse(decodedContent);
+                // FIXED: Read JSON directly from raw file (no base64 decoding needed)
+                const jsonData = await response.json();
                 
                 if (!jsonData || !jsonData.checkins) {
                     throw new Error('Invalid JSON structure from GitHub');
@@ -551,22 +527,22 @@
                 console.log('✅ Final parsed data:', checkins);
                 
                 updateCheckinDisplay(checkins);
-                updateDebugInfo('✅ Successfully loaded data via API', checkins, null, `Found ${checkins.length} check-ins, Total: ${jsonData.totalCheckins}, last updated: ${jsonData.lastUpdated}`);
+                updateDebugInfo('✅ Successfully loaded data from raw file', checkins, null, `Found ${checkins.length} check-ins, Total: ${jsonData.totalCheckins}, last updated: ${jsonData.lastUpdated}`);
                 
                 document.getElementById('connectionStatus').className = 'connection-status connected';
-                document.getElementById('connectionStatus').innerHTML = '🟢 API Connected';
+                document.getElementById('connectionStatus').innerHTML = '🟢 Connected';
                 
             } catch (error) {
                 console.error('❌ Error fetching data:', error);
-                updateDebugInfo('❌ API Connection failed', [], error.message, 'Check network/URL');
+                updateDebugInfo('❌ Connection failed', [], error.message, 'Check network/URL');
                 
                 document.getElementById('connectionStatus').className = 'connection-status disconnected';
-                document.getElementById('connectionStatus').innerHTML = '🔴 API Error';
+                document.getElementById('connectionStatus').innerHTML = '🔴 Error';
                 
                 if (isFirstLoad) {
                     document.getElementById('checkinItems').innerHTML = `
                         <div class="no-checkins">
-                            ❌ Unable to connect to GitHub API<br>
+                            ❌ Unable to connect to GitHub<br>
                             <small>Error: ${error.message}</small>
                         </div>
                     `;
