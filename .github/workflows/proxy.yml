@@ -1,0 +1,14 @@
+name: GitHub API Proxy
+
+on:
+  workflow_dispatch: # allows you to trigger manually
+
+jobs:
+  call-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call GitHub API with PAT
+        run: |
+          curl -H "Authorization: token ${{ secrets.MY_GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               https://api.github.com/user
