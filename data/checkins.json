@@ -1,6 +1,6 @@
 {
-  "lastUpdated": "2025-08-31T04:45:50.585Z",
-  "totalCheckins": 5,
+  "lastUpdated": "2025-08-31T04:49:22.219Z",
+  "totalCheckins": 6,
   "checkins": [
     {
       "nricFullName": "TEST TEST 01",
@@ -41,6 +41,14 @@
       "ticketNumber": "JM-25092025-0005-I5O1IM5F",
       "ticketID": "MEZ7HEBO-I5O1",
       "checkinTime": "2025-08-31 04:45:47"
+    },
+    {
+      "nricFullName": "TEST TEST 06",
+      "emailAddress": "yeesheng.ai@gmail.com",
+      "mobileNumber": "666666666",
+      "ticketNumber": "JM-25092025-0006-S45TVKIA",
+      "ticketID": "MEZ7LIPY-S45T",
+      "checkinTime": "2025-08-31 04:49:19"
     }
   ]
 }
