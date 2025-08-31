@@ -328,6 +328,7 @@
     <script>
         // GitHub JSON URL for your checkins data
         const GITHUB_JSON_URL = 'https://api.github.com/repos/YeeSheng6726/LTFC2025-Checkin_dashboard/contents/data/checkins.json';
+        const GITHUB_TOKEN = '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';  // Replace with your actual token
         
         let isFirstLoad = true;
         let fetchAttempts = 0;
@@ -519,7 +520,12 @@
                 updateDebugInfo('🔄 Fetching from GitHub API...', [], null, 'Making request...');
                 
                 // Add cache busting to prevent stale data
-                const response = await fetch(GITHUB_JSON_URL + '?v=' + Date.now());
+                const response = await fetch(GITHUB_JSON_URL + '?v=' + Date.now(), {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
