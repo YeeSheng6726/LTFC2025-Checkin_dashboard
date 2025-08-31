@@ -327,7 +327,7 @@
 
     <script>
         // GitHub JSON URL for your checkins data
-        const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/YeeSheng6726/LTFC2025-Checkin_dashboard/main/data/checkins.json';
+        const GITHUB_JSON_URL = 'https://api.github.com/repos/YeeSheng6726/LTFC2025-Checkin_dashboard/contents/data/checkins.json';
         
         let isFirstLoad = true;
         let fetchAttempts = 0;
@@ -501,10 +501,10 @@
         }
 
         async function fetchGitHubData() {
-            fetchAttempts++;
-            
+    fetchAttempts++;
+    
             try {
-                updateDebugInfo('🔄 Fetching from GitHub...', [], null, 'Making request...');
+                updateDebugInfo('🔄 Fetching from GitHub API...', [], null, 'Making request...');
                 
                 // Add cache busting to prevent stale data
                 const response = await fetch(GITHUB_JSON_URL + '?v=' + Date.now());
@@ -513,7 +513,10 @@
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
-                const jsonData = await response.json();
+                const apiResponse = await response.json();
+                
+                // Decode the base64 content from GitHub API
+                const jsonData = JSON.parse(Buffer.from(apiResponse.content, 'base64').toString());
                 
                 if (!jsonData || !jsonData.checkins) {
                     throw new Error('Invalid JSON structure from GitHub');
@@ -526,22 +529,22 @@
                 console.log('✅ Final parsed data:', checkins);
                 
                 updateCheckinDisplay(checkins);
-                updateDebugInfo('✅ Successfully loaded data', checkins, null, `Found ${checkins.length} check-ins, last updated: ${jsonData.lastUpdated}`);
+                updateDebugInfo('✅ Successfully loaded data via API', checkins, null, `Found ${checkins.length} check-ins, Total: ${jsonData.totalCheckins}, last updated: ${jsonData.lastUpdated}`);
                 
                 document.getElementById('connectionStatus').className = 'connection-status connected';
-                document.getElementById('connectionStatus').innerHTML = '🟢 Connected';
+                document.getElementById('connectionStatus').innerHTML = '🟢 API Connected';
                 
             } catch (error) {
                 console.error('❌ Error fetching data:', error);
-                updateDebugInfo('❌ Connection failed', [], error.message, 'Check network/URL');
+                updateDebugInfo('❌ API Connection failed', [], error.message, 'Check network/URL');
                 
                 document.getElementById('connectionStatus').className = 'connection-status disconnected';
-                document.getElementById('connectionStatus').innerHTML = '🔴 Error';
+                document.getElementById('connectionStatus').innerHTML = '🔴 API Error';
                 
                 if (isFirstLoad) {
                     document.getElementById('checkinItems').innerHTML = `
                         <div class="no-checkins">
-                            ❌ Unable to connect to GitHub<br>
+                            ❌ Unable to connect to GitHub API<br>
                             <small>Error: ${error.message}</small>
                         </div>
                     `;
