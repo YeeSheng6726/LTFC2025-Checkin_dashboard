@@ -333,6 +333,18 @@
         let fetchAttempts = 0;
         let lastDataCount = 0;
 
+        // FIXED: Browser-compatible base64 decoding function
+        function base64Decode(str) {
+            try {
+                // Use the browser's built-in atob function instead of Buffer
+                const decoded = atob(str);
+                return decoded;
+            } catch (error) {
+                console.error('Error decoding base64:', error);
+                return null;
+            }
+        }
+
         // Logo loading function with multiple attempts
         function loadLogo() {
             const logoImg = document.getElementById('logoImage');
@@ -501,8 +513,8 @@
         }
 
         async function fetchGitHubData() {
-    fetchAttempts++;
-    
+            fetchAttempts++;
+            
             try {
                 updateDebugInfo('🔄 Fetching from GitHub API...', [], null, 'Making request...');
                 
@@ -515,8 +527,14 @@
                 
                 const apiResponse = await response.json();
                 
-                // Decode the base64 content from GitHub API
-                const jsonData = JSON.parse(Buffer.from(apiResponse.content, 'base64').toString());
+                // FIXED: Use browser-compatible base64 decoding instead of Buffer
+                const decodedContent = base64Decode(apiResponse.content.replace(/\n/g, ''));
+                
+                if (!decodedContent) {
+                    throw new Error('Failed to decode base64 content from GitHub');
+                }
+                
+                const jsonData = JSON.parse(decodedContent);
                 
                 if (!jsonData || !jsonData.checkins) {
                     throw new Error('Invalid JSON structure from GitHub');
