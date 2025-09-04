@@ -407,19 +407,6 @@
                 Data source: Firebase Realtime Database
             `;
         }
-            
-            debugElement.innerHTML = `
-                <strong>🔍 DETAILED DEBUG INFO:</strong><br>
-                Status: ${status}<br>
-                Last update: ${now}<br>
-                Total checkins: ${dataCount}<br>
-                Displaying last: ${Math.min(5, dataCount)} entries<br>
-                Data order: ${dataOrder}<br>
-                ${extraInfo ? `Extra: ${extraInfo}<br>` : ''}
-                ${error ? `❌ Error: ${error}<br>` : ''}
-                Data source: Firebase Realtime Database
-            `;
-        }
 
         function formatTimeAgo(checkinTime) {
             try {
