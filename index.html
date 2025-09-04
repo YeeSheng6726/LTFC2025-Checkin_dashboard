@@ -399,14 +399,14 @@
             const now = new Date().toLocaleTimeString();
             const dataCount = dataArray.length;
             
-            // Show the actual order from data
-            let dataOrder = 'Not loaded';
-            if (dataArray.length > 0) {
-                dataOrder = dataArray.map((person, index) => `${index + 1}. ${person.nricFullName || 'Unknown'}`).join(', ');
-                if (dataOrder.length > 100) {
-                    dataOrder = dataOrder.substring(0, 100) + '...';
-                }
-            }
+            debugElement.innerHTML = `
+                <strong>🔍 DETAILED DEBUG INFO:</strong><br>
+                System Status: ${status}<br>
+                Last update: ${now}<br>
+                Check-ins: ${dataCount}<br>
+                Data source: Firebase Realtime Database
+            `;
+        }
             
             debugElement.innerHTML = `
                 <strong>🔍 DETAILED DEBUG INFO:</strong><br>
