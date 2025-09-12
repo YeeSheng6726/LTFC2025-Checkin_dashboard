@@ -319,7 +319,8 @@
             Data source: Firebase Realtime Database<br>
             Logo status: Checking...
         </div>
-        <!-- CLEANUP SECTION - ADD THIS AFTER DEBUG SECTION -->
+        
+        <!-- CLEANUP SECTION -->
         <div style="background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 10px; margin-top: 10px; border: 2px solid #dc3545; color: #333; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
             <button onclick="resetData()" style="background-color: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3); transition: all 0.3s ease;">
                 🗑️ Clean Up Test Data
@@ -337,7 +338,7 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+        import { getDatabase, ref, onValue, remove } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
         // ⚠️ REPLACE THIS WITH YOUR FIREBASE CONFIG FROM STEP 3
         const firebaseConfig = {
@@ -511,6 +512,29 @@
             isFirstLoad = false;
         }
 
+        // Define resetData function in global scope
+        window.resetData = function() {
+            if (confirm("🧹 Clean Up Test Data?\n\nThis will remove all current check-ins from the database.\nThis is useful for cleaning up after testing.\n\nProceed?")) {
+                if (confirm("⚠️ Final Confirmation\n\nAre you sure you want to delete all check-in data?\nThis action cannot be undone.")) {
+                    try {
+                        const checkinsRef = ref(database, 'checkins');
+                        remove(checkinsRef)
+                            .then(() => {
+                                alert("✅ Success!\n\nAll test check-in data has been removed.\nDashboard reset to 0 check-ins.");
+                                document.getElementById('checkinItems').innerHTML = '<div class="no-checkins">Test data cleaned up! Ready for next test or event 🚀</div>';
+                                updateStats(0);
+                                updateDebugInfo('✅ Test data manually cleaned up', [], null, 'Database reset - ready for fresh data');
+                            })
+                            .catch((error) => {
+                                alert("❌ Cleanup Failed\n\nError: " + error.message);
+                            });
+                    } catch (error) {
+                        alert("❌ Technical Error\n\nSomething went wrong: " + error.message);
+                    }
+                }
+            }
+        };
+
         // Firebase real-time listener
         try {
             updateDebugInfo('🔄 Connecting to Firebase...', [], null, 'Initializing connection...');
@@ -582,33 +606,6 @@
 
         // Load logo when page loads
         loadLogo();
-
-        // ADD THIS FUNCTION BEFORE </script>
-        window.resetData = function() {
-            if (confirm("🧹 Clean Up Test Data?\n\nThis will remove all current check-ins from the database.\nThis is useful for cleaning up after testing.\n\nProceed?")) {
-                if (confirm("⚠️ Final Confirmation\n\nAre you sure you want to delete all check-in data?\nThis action cannot be undone.")) {
-                    try {
-                        import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js')
-                            .then((module) => {
-                                const { ref, remove } = module;
-                                const checkinsRef = ref(database, 'checkins');
-                                return remove(checkinsRef);
-                            })
-                            .then(() => {
-                                alert("✅ Success!\n\nAll test check-in data has been removed.\nDashboard reset to 0 check-ins.");
-                                document.getElementById('checkinItems').innerHTML = '<div class="no-checkins">Test data cleaned up! Ready for next test or event 🚀</div>';
-                                updateStats(0);
-                                updateDebugInfo('✅ Test data manually cleaned up', [], null, 'Database reset - ready for fresh data');
-                            })
-                            .catch((error) => {
-                                alert("❌ Cleanup Failed\n\nError: " + error.message);
-                            });
-                    } catch (error) {
-                        alert("❌ Technical Error\n\nSomething went wrong: " + error.message);
-                    }
-                }
-            }
-        };
         
     </script>
 </body>
