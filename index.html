@@ -290,7 +290,7 @@
                     <div class="stat-label">Checked In</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-number">100</div>
+                    <div class="stat-number">110</div>
                     <div class="stat-label">Total Expected</div>
                 </div>
                 <div class="stat-box">
@@ -430,7 +430,7 @@
 
         function updateStats(checkedInCount) {
             document.getElementById('checkedInCount').textContent = checkedInCount;
-            const percentage = Math.round((checkedInCount / 100) * 100);
+            const percentage = Math.round((checkedInCount / 110) * 100);
             document.getElementById('percentageCount').textContent = `${percentage}%`;
         }
 
